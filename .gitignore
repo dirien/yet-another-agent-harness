@@ -3,5 +3,8 @@ yaah
 !yaah/
 dist/
 
+# Logs
+.claude/logs/
+
 # OS
 .DS_Store
