@@ -3,8 +3,9 @@ yaah
 !yaah/
 dist/
 
-# Logs
+# Logs & runtime data
 .claude/logs/
+.claude/sessions/
 
 # OS
 .DS_Store
