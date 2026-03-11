@@ -22,7 +22,9 @@ h.Hooks().Register(handlers.NewLinterWith(
 ))
 ```
 
-> **Note:** ESLint is intentionally not included as a built-in profile because it requires per-project configuration (`.eslintrc`, plugins). `tsc --noEmit` works universally with any `tsconfig.json`.
+> **Note:** ESLint is intentionally not included as a built-in profile because it requires per-project configuration (`.eslintrc`, plugins). `tsc --noEmit` runs per-file and works with or without a `tsconfig.json`.
+
+> **Multi-profile support:** Multiple profiles can match the same file extension. For example, registering both `Prettier()` and `TypeScript()` means `.ts` files get formatted by Prettier first, then type-checked by tsc — both run in registration order.
 
 You can also write your own profiles:
 
