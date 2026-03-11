@@ -9,7 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/dirien/yet-another-agent-harness/internal/cli"
 	"github.com/dirien/yet-another-agent-harness/pkg/generator"
 	harnesspkg "github.com/dirien/yet-another-agent-harness/pkg/harness"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks"
@@ -40,8 +39,6 @@ func main() {
 
 	root.AddCommand(
 		generateCmd(),
-		schemaCmd(),
-		initCmd(),
 		hookCmd(),
 		infoCmd(),
 		versionCmd(),
@@ -54,42 +51,20 @@ func main() {
 }
 
 func generateCmd() *cobra.Command {
-	var (
-		configPath string
-		outputDir  string
-		fromCode   bool
-	)
+	var outputDir string
 
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate .claude/ directory from yaah config or registered code",
+		Short: "Generate .claude/ directory from built-in defaults",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var cfg *schema.HarnessConfig
+			p := newHarness()
+			cfg := p.GenerateConfig()
 
-			if fromCode {
-				p := newHarness()
-				cfg = p.GenerateConfig()
-
-				if outputDir == "" {
-					outputDir = "."
-				}
-				if err := p.WriteAll(outputDir); err != nil {
-					return err
-				}
-			} else {
-				if configPath == "" {
-					cwd, _ := os.Getwd()
-					found, err := cli.FindConfig(cwd)
-					if err != nil {
-						return err
-					}
-					configPath = found
-				}
-				var err error
-				cfg, err = cli.LoadConfig(configPath)
-				if err != nil {
-					return err
-				}
+			if outputDir == "" {
+				outputDir = "."
+			}
+			if err := p.WriteAll(outputDir); err != nil {
+				return err
 			}
 
 			data, err := generator.GenerateClaudeSettings(cfg)
@@ -97,16 +72,7 @@ func generateCmd() *cobra.Command {
 				return err
 			}
 
-			claudeDir := outputDir
-			if claudeDir == "" {
-				if configPath != "" {
-					claudeDir = filepath.Dir(configPath)
-				} else {
-					claudeDir = "."
-				}
-			}
-			claudeDir = filepath.Join(claudeDir, ".claude")
-
+			claudeDir := filepath.Join(outputDir, ".claude")
 			if err := os.MkdirAll(claudeDir, 0o755); err != nil {
 				return fmt.Errorf("create .claude dir: %w", err)
 			}
@@ -121,65 +87,8 @@ func generateCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&configPath, "config", "c", "", "Path to yaah.json")
-	cmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output base directory")
-	cmd.Flags().BoolVar(&fromCode, "from-code", false, "Generate from Go-registered handlers instead of yaah.json")
+	cmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output base directory (default: current directory)")
 	return cmd
-}
-
-func schemaCmd() *cobra.Command {
-	var outputPath string
-
-	cmd := &cobra.Command{
-		Use:   "schema",
-		Short: "Output the JSON Schema for yaah.json",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			data, err := generator.GenerateJSONSchema()
-			if err != nil {
-				return err
-			}
-
-			if outputPath != "" {
-				if err := os.WriteFile(outputPath, data, 0o644); err != nil {
-					return fmt.Errorf("write schema: %w", err)
-				}
-				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Schema written to %s\n", outputPath)
-			} else {
-				_, _ = fmt.Fprintln(cmd.OutOrStdout(), string(data))
-			}
-			return nil
-		},
-	}
-
-	cmd.Flags().StringVarP(&outputPath, "output", "o", "", "Write schema to file")
-	return cmd
-}
-
-func initCmd() *cobra.Command {
-	return &cobra.Command{
-		Use:   "init",
-		Short: "Create a starter yaah.json in the current directory",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			outPath := "yaah.json"
-			if _, err := os.Stat(outPath); err == nil {
-				return fmt.Errorf("%s already exists", outPath)
-			}
-
-			p := newHarness()
-			cfg := p.GenerateConfig()
-			data, err := generator.GenerateHarnessJSON(cfg)
-			if err != nil {
-				return err
-			}
-
-			if err := os.WriteFile(outPath, data, 0o644); err != nil {
-				return fmt.Errorf("write config: %w", err)
-			}
-
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Created %s\n", outPath)
-			return nil
-		},
-	}
 }
 
 // hookCmd is the runtime dispatcher: `yaah hook <event>` reads stdin and
@@ -273,7 +182,7 @@ func doctorCmd() *cobra.Command {
 					issues++
 				}
 			} else {
-				_, _ = fmt.Fprintf(out, "  ✗ %-25s not found (run 'yaah generate --from-code')\n", settingsPath)
+				_, _ = fmt.Fprintf(out, "  ✗ %-25s not found (run 'yaah generate')\n", settingsPath)
 				issues++
 			}
 			_, _ = fmt.Fprintln(out)

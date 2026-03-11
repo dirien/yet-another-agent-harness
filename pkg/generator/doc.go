@@ -1,3 +1,3 @@
 // Package generator converts HarnessConfig into output files:
-// .claude/settings.json, .claude/lsp.json, and JSON Schema.
+// .claude/settings.json and .claude/lsp.json.
 package generator

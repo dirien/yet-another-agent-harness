@@ -275,12 +275,3 @@ func GenerateLSPConfig(cfg *schema.HarnessConfig) ([]byte, error) {
 	}
 	return data, nil
 }
-
-// GenerateHarnessJSON serializes a HarnessConfig to pretty JSON (for yaah.json).
-func GenerateHarnessJSON(cfg *schema.HarnessConfig) ([]byte, error) {
-	data, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("marshal harness config: %w", err)
-	}
-	return data, nil
-}

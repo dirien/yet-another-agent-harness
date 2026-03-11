@@ -2,20 +2,25 @@
 
 ## Using yaah
 
-There are three ways to use yaah, depending on how much control you want.
+There are two ways to use yaah.
 
-### From code with defaults
+### CLI (built-in defaults)
 
-The fastest path. One command, batteries included:
+The fastest path. yaah has all its defaults compiled into the binary:
 
 ```bash
 cd your-repo
-yaah generate --from-code
+yaah generate
 ```
 
-This registers all default components and generates `.claude/`. To pick only what you want:
+That's it. yaah uses its built-in `AllDefaults()` to generate the full `.claude/` directory with every handler, skill, LSP server, and MCP provider enabled.
+
+### Go library (full control)
+
+For teams that want programmatic control, import yaah as a Go library. Use `DefaultOptions` to pick exactly which components to enable:
 
 ```go
+// Pick only what you need
 opts := harness.DefaultOptions{
     EnableCommandGuard:   true,
     EnableSecretScanner:  true,
@@ -30,18 +35,7 @@ opts := harness.DefaultOptions{
 h := harness.NewWithDefaults(opts)
 ```
 
-### From JSON config
-
-If you'd rather not write Go:
-
-```bash
-yaah init          # creates a starter yaah.json
-yaah generate      # generates .claude/ from yaah.json
-```
-
-### From Go code (full control)
-
-Write a Go program that registers components directly:
+Or go fully custom by registering components one by one:
 
 ```go
 package main
@@ -105,17 +99,12 @@ Run it with `go run ./cmd/your-setup/` whenever you change your config.
 ## CLI reference
 
 ```
-yaah generate                  # Generate .claude/ from yaah.json
-yaah generate -c path/to.json  # Generate from a specific config file
-yaah generate --from-code      # Generate from Go-registered components
-yaah generate -o ./out         # Output to a different directory
-yaah init                      # Create a starter yaah.json
-yaah schema                    # Print the JSON Schema for yaah.json
-yaah schema -o schema.json     # Write schema to file
-yaah hook <event>              # Runtime hook dispatcher (called by Claude Code)
-yaah info                      # Show all registered components
-yaah doctor                    # Health check: validates binaries and config
-yaah version                   # Print version, commit, and build date
+yaah generate              # Generate .claude/ with built-in defaults
+yaah generate -o ./out     # Output to a different directory
+yaah hook <event>          # Runtime hook dispatcher (called by Claude Code)
+yaah info                  # Show all registered components
+yaah doctor                # Health check: validates binaries and config
+yaah version               # Print version, commit, and build date
 ```
 
 ## Architecture
@@ -150,9 +139,9 @@ pkg/agents/            Agent interface + Registry + AgentWithAdvanced + Executor
 pkg/commands/          Command interface + Registry + CommandWithAdvanced
 pkg/plugins/           Plugin interface + Registry
 pkg/harness/           Harness (top-level wiring) + defaults
-pkg/generator/         JSON Schema + settings.json generation
+pkg/generator/         settings.json generation
 cmd/yaah/              CLI entry point
-internal/cli/          Config file discovery and loading
+internal/cli/          CLI utilities
 ```
 
 ## What gets generated

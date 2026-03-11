@@ -1,3 +1,2 @@
-// Package cli provides configuration file discovery and loading for
-// the yaah CLI.
+// Package cli provides utilities for the yaah CLI.
 package cli

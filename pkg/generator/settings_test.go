@@ -142,19 +142,3 @@ func TestGenerateLSPConfig_WithServers(t *testing.T) {
 		t.Errorf("expected command [gopls serve], got %v", goplsEntry["command"])
 	}
 }
-
-func TestGenerateHarnessJSON_RoundTrip(t *testing.T) {
-	cfg := &schema.HarnessConfig{Version: "1"}
-	data, err := generator.GenerateHarnessJSON(cfg)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	var out schema.HarnessConfig
-	if err := json.Unmarshal(data, &out); err != nil {
-		t.Fatalf("round-trip unmarshal failed: %v", err)
-	}
-	if out.Version != "1" {
-		t.Errorf("Version: got %q, want %q", out.Version, "1")
-	}
-}

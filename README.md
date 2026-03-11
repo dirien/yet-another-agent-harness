@@ -10,10 +10,10 @@ Claude Code configuration is a mess. Settings live in JSON files, skills are mar
 
 ## What yaah does
 
-You describe your Claude Code setup in Go (or JSON if you prefer). yaah generates the entire `.claude/` directory: settings, hooks, skills, agents, MCP servers, LSP plugins. One command, every repo, same result.
+yaah generates the entire `.claude/` directory from Go code: settings, hooks, skills, agents, MCP servers, LSP plugins. One command, every repo, same result.
 
 ```bash
-yaah generate --from-code
+yaah generate
 ```
 
 That single command gives you:
@@ -59,7 +59,7 @@ Grab a release from [GitHub Releases](https://github.com/dirien/yet-another-agen
 ```bash
 # Generate .claude/ with all defaults
 cd your-repo
-yaah generate --from-code
+yaah generate
 
 # Check that everything is installed
 yaah doctor
