@@ -34,7 +34,7 @@ This gives you:
 - **SessionLogger** — audit trail of session start/stop events
 - **MCP** — Context7 for library documentation, Pulumi for AI-powered infrastructure
 - **LSP** — gopls, pyright, typescript, csharp (via official marketplace `enabledPlugins`)
-- **Skills** — commit, PR, review workflows + remote Pulumi skills
+- **Skills** — commit, PR, review workflows + remote Pulumi skills + 13 development skills
 - **Agents** — executor (sonnet), librarian (haiku), reviewer (opus)
 
 ### Check your setup
@@ -374,6 +374,51 @@ h.Skills().Register(skills.NewRemoteSkill(
 
 The ref can be a tag, branch, or commit SHA. Skills are cached in `~/.yaah/cache/skills/` and invalidated when the ref changes. Override the cache directory with `YAAH_HOME`. Multi-file skills (with reference directories) implement `skills.SkillWithFiles`.
 
+### Default remote skills
+
+yaah ships with remote skills from three repositories:
+
+**pulumi/agent-skills** — Pulumi IaC authoring and migration:
+
+| Skill                        | Description                              |
+| ---------------------------- | ---------------------------------------- |
+| `pulumi-best-practices`      | Reliable program patterns                |
+| `pulumi-component`           | ComponentResource authoring              |
+| `pulumi-automation-api`      | Automation API best practices            |
+| `pulumi-esc`                 | Environments, secrets, and configuration |
+| `pulumi-terraform-to-pulumi` | Convert Terraform to Pulumi              |
+| `pulumi-cdk-to-pulumi`       | Convert AWS CDK to Pulumi                |
+| `cloudformation-to-pulumi`   | Convert CloudFormation to Pulumi         |
+| `pulumi-arm-to-pulumi`       | Convert Azure ARM/Bicep to Pulumi        |
+
+**dirien/claude-skills** — Pulumi language-specific skills:
+
+| Skill               | Description                              |
+| ------------------- | ---------------------------------------- |
+| `pulumi-typescript` | Pulumi TypeScript IaC with ESC and OIDC  |
+| `pulumi-go`         | Pulumi Go IaC with ESC and OIDC          |
+| `pulumi-python`     | Pulumi Python IaC with ESC and OIDC      |
+| `pulumi-neo`        | Pulumi Neo conversational infrastructure |
+| `pulumi-cli`        | Pulumi CLI command reference             |
+
+**jeffallan/claude-skills** — Development and operations skills:
+
+| Skill                   | Description                                                               |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `golang-pro`            | Go concurrent patterns, microservices, gRPC, and performance optimization |
+| `kubernetes-specialist` | Kubernetes deployments, Helm, RBAC, NetworkPolicies, and multi-cluster    |
+| `devops-engineer`       | CI/CD pipelines, Docker, Kubernetes, Terraform, and GitOps                |
+| `python-pro`            | Python 3.11+ with type safety, async, pytest, and ruff                    |
+| `typescript-pro`        | Advanced TypeScript types, generics, tRPC, and monorepo setup             |
+| `csharp-developer`      | C# .NET 8+, ASP.NET Core, Blazor, EF Core, and MediatR                    |
+| `javascript-pro`        | Modern ES2023+ JavaScript, async/await, ESM, and Node.js                  |
+| `cli-developer`         | CLI tools with argument parsing, completions, and cross-platform support  |
+| `sre-engineer`          | SLOs, error budgets, incident response, and capacity planning             |
+| `the-fool`              | Devil's advocate, pre-mortems, red teaming, and assumption auditing       |
+| `architecture-designer` | System architecture, ADRs, trade-offs, and scalability planning           |
+| `spring-boot-engineer`  | Spring Boot 3.x, Spring Security 6, JPA, WebFlux, and Spring Cloud        |
+| `code-reviewer`         | Code review for bugs, security, performance, and maintainability          |
+
 ### Skill frontmatter
 
 Skills can optionally implement the `SkillWithFrontmatter` interface to inject YAML frontmatter into the generated `SKILL.md`:
@@ -570,6 +615,7 @@ internal/cli/          Config file discovery and loading
 - 4 LSP servers via official marketplace (gopls, pyright, typescript, csharp)
 - Commit, PR, and Review skills
 - 13 remote Pulumi skills (best practices, components, ESC, migrations)
+- 13 remote development skills from jeffallan/claude-skills (Go, Python, TypeScript, K8s, DevOps, SRE, and more)
 - Executor, Librarian, and Reviewer agents
 
 ## Dogfooding

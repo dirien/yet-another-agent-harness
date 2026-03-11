@@ -46,6 +46,21 @@ type DefaultOptions struct {
 	EnablePulumiNeo        bool
 	EnablePulumiCLI        bool
 
+	// Remote skills — jeffallan/claude-skills
+	EnableGolangPro            bool
+	EnableKubernetesSpecialist bool
+	EnableDevOpsEngineer       bool
+	EnablePythonPro            bool
+	EnableTypeScriptPro        bool
+	EnableCSharpDeveloper      bool
+	EnableJavaScriptPro        bool
+	EnableCLIDeveloper         bool
+	EnableSREEngineer          bool
+	EnableTheFool              bool
+	EnableArchitectureDesigner bool
+	EnableSpringBootEngineer   bool
+	EnableCodeReviewer         bool
+
 	// LSP servers (marketplace-backed)
 	EnableGopls      bool
 	EnablePyright    bool
@@ -92,6 +107,19 @@ func AllDefaults() DefaultOptions {
 		EnablePulumiPython:           true,
 		EnablePulumiNeo:              true,
 		EnablePulumiCLI:              true,
+		EnableGolangPro:              true,
+		EnableKubernetesSpecialist:   true,
+		EnableDevOpsEngineer:         true,
+		EnablePythonPro:              true,
+		EnableTypeScriptPro:          true,
+		EnableCSharpDeveloper:        true,
+		EnableJavaScriptPro:          true,
+		EnableCLIDeveloper:           true,
+		EnableSREEngineer:            true,
+		EnableTheFool:                true,
+		EnableArchitectureDesigner:   true,
+		EnableSpringBootEngineer:     true,
+		EnableCodeReviewer:           true,
 		EnableGopls:                  true,
 		EnablePyright:                true,
 		EnableTypeScript:             true,
@@ -234,6 +262,86 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-cli", "Pulumi CLI command reference for deployments",
 			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-cli/SKILL.md",
+		))
+	}
+
+	// Remote skills — jeffallan/claude-skills
+	if opts.EnableGolangPro {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"golang-pro", "Go concurrent patterns, microservices, gRPC, and performance optimization",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/golang-pro/SKILL.md",
+		))
+	}
+	if opts.EnableKubernetesSpecialist {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"kubernetes-specialist", "Kubernetes deployments, Helm, RBAC, NetworkPolicies, and multi-cluster",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/kubernetes-specialist/SKILL.md",
+		))
+	}
+	if opts.EnableDevOpsEngineer {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"devops-engineer", "CI/CD pipelines, Docker, Kubernetes, Terraform, and GitOps",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/devops-engineer/SKILL.md",
+		))
+	}
+	if opts.EnablePythonPro {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"python-pro", "Python 3.11+ with type safety, async, pytest, and ruff",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/python-pro/SKILL.md",
+		))
+	}
+	if opts.EnableTypeScriptPro {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"typescript-pro", "Advanced TypeScript types, generics, tRPC, and monorepo setup",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/typescript-pro/SKILL.md",
+		))
+	}
+	if opts.EnableCSharpDeveloper {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"csharp-developer", "C# .NET 8+, ASP.NET Core, Blazor, EF Core, and MediatR",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/csharp-developer/SKILL.md",
+		))
+	}
+	if opts.EnableJavaScriptPro {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"javascript-pro", "Modern ES2023+ JavaScript, async/await, ESM, and Node.js",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/javascript-pro/SKILL.md",
+		))
+	}
+	if opts.EnableCLIDeveloper {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"cli-developer", "CLI tools with argument parsing, completions, and cross-platform support",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/cli-developer/SKILL.md",
+		))
+	}
+	if opts.EnableSREEngineer {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"sre-engineer", "SLOs, error budgets, incident response, and capacity planning",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/sre-engineer/SKILL.md",
+		))
+	}
+	if opts.EnableTheFool {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"the-fool", "Devil's advocate, pre-mortems, red teaming, and assumption auditing",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/the-fool/SKILL.md",
+		))
+	}
+	if opts.EnableArchitectureDesigner {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"architecture-designer", "System architecture, ADRs, trade-offs, and scalability planning",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/architecture-designer/SKILL.md",
+		))
+	}
+	if opts.EnableSpringBootEngineer {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"spring-boot-engineer", "Spring Boot 3.x, Spring Security 6, JPA, WebFlux, and Spring Cloud",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/spring-boot-engineer/SKILL.md",
+		))
+	}
+	if opts.EnableCodeReviewer {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"code-reviewer", "Code review for bugs, security, performance, and maintainability",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/code-reviewer/SKILL.md",
 		))
 	}
 
