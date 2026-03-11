@@ -94,13 +94,14 @@ func Prettier() Profile {
 
 // TypeScript returns a lint profile for TypeScript using tsc for type checking.
 // This is intentionally minimal — no ESLint, since that requires per-project config.
-// Runs per-file so it works with or without a tsconfig.json.
+// Requires tsconfig.json — skipped in projects without one.
 func TypeScript() Profile {
 	return Profile{
-		Name:       "typescript",
-		Extensions: []string{".ts", ".tsx"},
+		Name:         "typescript",
+		Extensions:   []string{".ts", ".tsx"},
+		RequiresFile: "tsconfig.json",
 		Steps: []Step{
-			{Label: "typecheck", Cmd: []string{"npx", "tsc", "--noEmit"}, AppendFile: true, FailBlocks: true},
+			{Label: "typecheck", Cmd: []string{"npx", "tsc", "--noEmit"}, AppendFile: false, FailBlocks: true},
 		},
 	}
 }
@@ -128,13 +129,13 @@ var (
 // Implements: Handler, FileAware.
 type Linter struct {
 	profiles []Profile
-	extIndex map[string]*Profile // extension -> first matching profile
+	extIndex map[string][]*Profile // extension -> all matching profiles (run in order)
 }
 
 // NewLinter creates a Linter with no profiles. Use AddProfile or NewLinterWith.
 func NewLinter() *Linter {
 	return &Linter{
-		extIndex: make(map[string]*Profile),
+		extIndex: make(map[string][]*Profile),
 	}
 }
 
@@ -147,12 +148,12 @@ func NewLinterWith(profiles ...Profile) *Linter {
 	return t
 }
 
-// AddProfile registers a lint profile. Later profiles for the same extension override earlier ones.
+// AddProfile registers a lint profile. Multiple profiles can match the same extension.
 func (t *Linter) AddProfile(e Profile) {
 	t.profiles = append(t.profiles, e)
+	stored := &t.profiles[len(t.profiles)-1]
 	for _, ext := range e.Extensions {
-		stored := t.profiles[len(t.profiles)-1]
-		t.extIndex[ext] = &stored
+		t.extIndex[ext] = append(t.extIndex[ext], stored)
 	}
 }
 
@@ -178,66 +179,68 @@ func (t *Linter) FileExtensions() []string {
 }
 
 // LintFile runs the lint pipeline for the given file path.
-// If profileName is non-empty, only that profile is used; otherwise the profile
-// is selected by file extension. Returns the combined lint output and whether
-// the lint blocked (i.e. a FailBlocks step failed).
+// If profileName is non-empty, only that profile is used; otherwise all profiles
+// matching the file extension are run in order. Returns the combined lint output
+// and whether any profile blocked (i.e. a FailBlocks step failed).
 func (t *Linter) LintFile(ctx context.Context, filePath, profileName, cwd string) (output string, blocked bool, err error) {
 	if _, statErr := os.Stat(filePath); os.IsNotExist(statErr) {
 		return "", false, fmt.Errorf("file not found: %s", filePath)
 	}
 
-	var profile *Profile
+	var profiles []*Profile
 	if profileName != "" {
 		for i := range t.profiles {
 			if t.profiles[i].Name == profileName {
-				profile = &t.profiles[i]
+				profiles = []*Profile{&t.profiles[i]}
 				break
 			}
 		}
-		if profile == nil {
+		if len(profiles) == 0 {
 			return "", false, fmt.Errorf("unknown profile: %s", profileName)
 		}
 	} else {
 		ext := filepath.Ext(filePath)
-		profile = t.extIndex[ext]
-		if profile == nil {
+		profiles = t.extIndex[ext]
+		if len(profiles) == 0 {
 			return "", false, fmt.Errorf("no lint profile for extension %q", ext)
 		}
 	}
 
-	// Skip if the profile requires a config file that doesn't exist.
-	if profile.RequiresFile != "" {
-		searchDir := cwd
-		if searchDir == "" {
-			searchDir = filepath.Dir(filePath)
-		}
-		if _, err := os.Stat(filepath.Join(searchDir, profile.RequiresFile)); os.IsNotExist(err) {
-			return "", false, fmt.Errorf("profile %s requires %s (not found in %s)", profile.Name, profile.RequiresFile, searchDir)
-		}
+	searchDir := cwd
+	if searchDir == "" {
+		searchDir = filepath.Dir(filePath)
 	}
 
 	var msgs []string
-	for _, step := range profile.Steps {
-		args := make([]string, len(step.Cmd))
-		copy(args, step.Cmd)
-		if step.AppendFile {
-			args = append(args, filePath)
-		}
-
-		cmd := exec.CommandContext(ctx, args[0], args[1:]...)
-		if cwd != "" {
-			cmd.Dir = cwd
-		}
-		out, cmdErr := cmd.CombinedOutput()
-		outStr := strings.TrimSpace(string(out))
-
-		if cmdErr != nil {
-			msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
-			if step.FailBlocks {
-				return strings.Join(msgs, "\n"), true, nil
+	for _, profile := range profiles {
+		if profile.RequiresFile != "" {
+			if _, err := os.Stat(filepath.Join(searchDir, profile.RequiresFile)); os.IsNotExist(err) {
+				continue
 			}
-		} else if outStr != "" {
-			msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+		}
+
+		for _, step := range profile.Steps {
+			args := make([]string, len(step.Cmd))
+			copy(args, step.Cmd)
+			if step.AppendFile {
+				args = append(args, filePath)
+			}
+
+			cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+			if cwd != "" {
+				cmd.Dir = cwd
+			}
+			out, cmdErr := cmd.CombinedOutput()
+			outStr := strings.TrimSpace(string(out))
+
+			if cmdErr != nil {
+				msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+				if step.FailBlocks {
+					return strings.Join(msgs, "\n"), true, nil
+				}
+			} else if outStr != "" {
+				msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+			}
 		}
 	}
 
@@ -254,41 +257,43 @@ func (t *Linter) Execute(ctx context.Context, input *hooks.Input) (*hooks.Result
 	}
 
 	ext := filepath.Ext(fp)
-	profile, ok := t.extIndex[ext]
-	if !ok {
+	profiles := t.extIndex[ext]
+	if len(profiles) == 0 {
 		return nil, nil
 	}
 
-	// Skip if the profile requires a config file that doesn't exist.
-	if profile.RequiresFile != "" {
-		if _, err := os.Stat(filepath.Join(input.Cwd, profile.RequiresFile)); os.IsNotExist(err) {
-			return nil, nil
-		}
-	}
-
 	var msgs []string
-	for _, step := range profile.Steps {
-		args := make([]string, len(step.Cmd))
-		copy(args, step.Cmd)
-		if step.AppendFile {
-			args = append(args, fp)
+	for _, profile := range profiles {
+		// Skip if the profile requires a config file that doesn't exist.
+		if profile.RequiresFile != "" {
+			if _, err := os.Stat(filepath.Join(input.Cwd, profile.RequiresFile)); os.IsNotExist(err) {
+				continue
+			}
 		}
 
-		cmd := exec.CommandContext(ctx, args[0], args[1:]...)
-		cmd.Dir = input.Cwd
-		out, err := cmd.CombinedOutput()
-		outStr := strings.TrimSpace(string(out))
-
-		if err != nil {
-			msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
-			if step.FailBlocks {
-				return &hooks.Result{
-					Error: strings.Join(msgs, "\n"),
-					Block: true,
-				}, nil
+		for _, step := range profile.Steps {
+			args := make([]string, len(step.Cmd))
+			copy(args, step.Cmd)
+			if step.AppendFile {
+				args = append(args, fp)
 			}
-		} else if outStr != "" {
-			msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+
+			cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+			cmd.Dir = input.Cwd
+			out, err := cmd.CombinedOutput()
+			outStr := strings.TrimSpace(string(out))
+
+			if err != nil {
+				msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+				if step.FailBlocks {
+					return &hooks.Result{
+						Error: strings.Join(msgs, "\n"),
+						Block: true,
+					}, nil
+				}
+			} else if outStr != "" {
+				msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+			}
 		}
 	}
 
