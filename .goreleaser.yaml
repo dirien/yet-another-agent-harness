@@ -44,6 +44,20 @@ signs:
 sboms:
   - artifacts: archive
 
+brews:
+  - repository:
+      owner: dirien
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    name: yaah
+    homepage: https://github.com/dirien/yet-another-agent-harness
+    description: "Yet Another Agent Harness — Go toolkit for managing Claude Code configuration"
+    license: MIT
+    install: |
+      bin.install "yaah"
+    test: |
+      system "#{bin}/yaah", "--help"
+
 changelog:
   use: github
   groups:
