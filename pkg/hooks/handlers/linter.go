@@ -94,14 +94,13 @@ func Prettier() Profile {
 
 // TypeScript returns a lint profile for TypeScript using tsc for type checking.
 // This is intentionally minimal — no ESLint, since that requires per-project config.
-// Requires tsconfig.json — skipped in projects without one (Prettier still handles formatting).
+// Runs per-file so it works with or without a tsconfig.json.
 func TypeScript() Profile {
 	return Profile{
-		Name:         "typescript",
-		Extensions:   []string{".ts", ".tsx"},
-		RequiresFile: "tsconfig.json",
+		Name:       "typescript",
+		Extensions: []string{".ts", ".tsx"},
 		Steps: []Step{
-			{Label: "typecheck", Cmd: []string{"npx", "tsc", "--noEmit"}, AppendFile: false, FailBlocks: true},
+			{Label: "typecheck", Cmd: []string{"npx", "tsc", "--noEmit"}, AppendFile: true, FailBlocks: true},
 		},
 	}
 }
