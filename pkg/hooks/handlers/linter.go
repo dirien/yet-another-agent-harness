@@ -25,9 +25,10 @@ type Step struct {
 
 // Profile defines a complete lint pipeline for a set of file extensions.
 type Profile struct {
-	Name       string   // Profile name (e.g. "ruff", "golangci-lint", "biome").
-	Extensions []string // File extensions this profile covers (e.g. ".go", ".py").
-	Steps      []Step   // Ordered pipeline of commands to run.
+	Name         string   // Profile name (e.g. "ruff", "golangci-lint", "biome").
+	Extensions   []string // File extensions this profile covers (e.g. ".go", ".py").
+	Steps        []Step   // Ordered pipeline of commands to run.
+	RequiresFile string   // If set, skip this profile when this file doesn't exist in the working directory (e.g. "tsconfig.json").
 }
 
 // --- Built-in profiles ---
@@ -93,10 +94,12 @@ func Prettier() Profile {
 
 // TypeScript returns a lint profile for TypeScript using tsc for type checking.
 // This is intentionally minimal — no ESLint, since that requires per-project config.
+// Skipped automatically when no tsconfig.json is present.
 func TypeScript() Profile {
 	return Profile{
-		Name:       "typescript",
-		Extensions: []string{".ts", ".tsx"},
+		Name:         "typescript",
+		Extensions:   []string{".ts", ".tsx"},
+		RequiresFile: "tsconfig.json",
 		Steps: []Step{
 			{Label: "typecheck", Cmd: []string{"npx", "tsc", "--noEmit"}, AppendFile: false, FailBlocks: true},
 		},
@@ -203,6 +206,17 @@ func (t *Linter) LintFile(ctx context.Context, filePath, profileName, cwd string
 		}
 	}
 
+	// Skip if the profile requires a config file that doesn't exist.
+	if profile.RequiresFile != "" {
+		searchDir := cwd
+		if searchDir == "" {
+			searchDir = filepath.Dir(filePath)
+		}
+		if _, err := os.Stat(filepath.Join(searchDir, profile.RequiresFile)); os.IsNotExist(err) {
+			return "", false, fmt.Errorf("profile %s requires %s (not found in %s)", profile.Name, profile.RequiresFile, searchDir)
+		}
+	}
+
 	var msgs []string
 	for _, step := range profile.Steps {
 		args := make([]string, len(step.Cmd))
@@ -244,6 +258,13 @@ func (t *Linter) Execute(ctx context.Context, input *hooks.Input) (*hooks.Result
 	profile, ok := t.extIndex[ext]
 	if !ok {
 		return nil, nil
+	}
+
+	// Skip if the profile requires a config file that doesn't exist.
+	if profile.RequiresFile != "" {
+		if _, err := os.Stat(filepath.Join(input.Cwd, profile.RequiresFile)); os.IsNotExist(err) {
+			return nil, nil
+		}
 	}
 
 	var msgs []string
