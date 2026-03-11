@@ -618,14 +618,6 @@ internal/cli/          Config file discovery and loading
 - 13 remote development skills from jeffallan/claude-skills (Go, Python, TypeScript, K8s, DevOps, SRE, and more)
 - Executor, Librarian, and Reviewer agents
 
-## Dogfooding
-
-yaah generates its own `.claude/` directory using the defaults:
-
-```bash
-yaah generate --from-code
-```
-
 ## License
 
 [MIT](LICENSE)
