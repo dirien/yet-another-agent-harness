@@ -18,7 +18,7 @@ yaah generate
 
 That single command gives you:
 
-- 5 hooks out of the box: linting (golangci-lint, ruff, prettier), a command guard that blocks `rm -rf /` and friends, a secret scanner for leaked keys, a comment checker that catches `TODO: implement` placeholders, and a session logger
+- 5 hooks out of the box: linting (golangci-lint, ruff, prettier, tsc), a command guard that blocks `rm -rf /` and friends, a secret scanner for leaked keys, a comment checker that catches `TODO: implement` placeholders, and a session logger
 - Middleware chains for composing handlers (e.g. secret scan + auto-remediation advice)
 - MCP servers for Context7 and Pulumi, plus a built-in yaah MCP server exposing tools like secret scanning, linting, and command checking directly to Claude Code
 - `.mcp.json` for project-level MCP server discovery (auto-detected by Claude Code)

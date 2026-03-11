@@ -91,6 +91,18 @@ func Prettier() Profile {
 	}
 }
 
+// TypeScript returns a lint profile for TypeScript using tsc for type checking.
+// This is intentionally minimal — no ESLint, since that requires per-project config.
+func TypeScript() Profile {
+	return Profile{
+		Name:       "typescript",
+		Extensions: []string{".ts", ".tsx"},
+		Steps: []Step{
+			{Label: "typecheck", Cmd: []string{"npx", "tsc", "--noEmit"}, AppendFile: false, FailBlocks: true},
+		},
+	}
+}
+
 // RustFmt returns a lint profile for Rust.
 func RustFmt() Profile {
 	return Profile{

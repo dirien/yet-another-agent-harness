@@ -95,6 +95,7 @@ func AllDefaults() DefaultOptions {
 			handlers.GolangCILint(),
 			handlers.Ruff(),
 			handlers.Prettier(),
+			handlers.TypeScript(),
 		},
 		EnableContext7:               true,
 		EnablePulumiMCP:              true,

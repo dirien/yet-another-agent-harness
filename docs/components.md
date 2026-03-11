@@ -15,11 +15,14 @@ h.Hooks().Register(handlers.NewLinterWith(
     handlers.GolangCILint(),   // .go -- gofmt + golangci-lint
     handlers.Ruff(),           // .py -- ruff check + format
     handlers.Prettier(),       // .js/.ts/.css/.md -- prettier
+    handlers.TypeScript(),     // .ts/.tsx -- tsc --noEmit (type checking)
     handlers.Biome(),          // .ts/.tsx/.js/.jsx -- biome
     handlers.RustFmt(),        // .rs -- rustfmt + clippy
     handlers.GoVet(),          // .go -- gofmt + go vet (minimal)
 ))
 ```
+
+> **Note:** ESLint is intentionally not included as a built-in profile because it requires per-project configuration (`.eslintrc`, plugins). `tsc --noEmit` works universally with any `tsconfig.json`.
 
 You can also write your own profiles:
 
