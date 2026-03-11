@@ -1,0 +1,266 @@
+package harness
+
+import (
+	agentpkg "github.com/dirien/yet-another-agent-harness/pkg/agents"
+	"github.com/dirien/yet-another-agent-harness/pkg/hooks/handlers"
+	lspproviders "github.com/dirien/yet-another-agent-harness/pkg/lsp/providers"
+	mcpproviders "github.com/dirien/yet-another-agent-harness/pkg/mcp/providers"
+	"github.com/dirien/yet-another-agent-harness/pkg/schema"
+	"github.com/dirien/yet-another-agent-harness/pkg/skills"
+	"github.com/dirien/yet-another-agent-harness/pkg/skills/builtins"
+)
+
+// DefaultOptions controls which built-in components to enlist.
+type DefaultOptions struct {
+	// Handlers
+	EnableCommandGuard   bool
+	EnableCommentChecker bool
+	EnableSecretScanner  bool
+	EnableSessionLogger  bool
+	LintProfiles         []handlers.Profile
+
+	// Providers (MCP)
+	EnableContext7  bool
+	EnablePulumiMCP bool
+	NotionToken     string
+
+	// Skills
+	EnableCommitSkill bool
+	EnablePRSkill     bool
+	EnableReviewSkill bool
+
+	// Remote skills — pulumi/agent-skills
+	EnablePulumiBestPractices    bool
+	EnablePulumiComponent        bool
+	EnablePulumiAutomationAPI    bool
+	EnablePulumiESC              bool
+	EnablePulumiTerraformMigrate bool
+	EnablePulumiCDKMigrate       bool
+	EnablePulumiCFNMigrate       bool
+	EnablePulumiARMMigrate       bool
+
+	// Remote skills — dirien/claude-skills
+	EnablePulumiTypeScript bool
+	EnablePulumiGo         bool
+	EnablePulumiPython     bool
+	EnablePulumiNeo        bool
+	EnablePulumiCLI        bool
+
+	// LSP servers (marketplace-backed)
+	EnableGopls      bool
+	EnablePyright    bool
+	EnableTypeScript bool
+	EnableCSharp     bool
+
+	// Agents
+	EnableExecutor  bool
+	EnableLibrarian bool
+	EnableReviewer  bool
+
+	// Settings
+	Settings *schema.Settings
+}
+
+// AllDefaults returns options with everything enabled (except Notion which needs a token).
+func AllDefaults() DefaultOptions {
+	thinking := true
+	return DefaultOptions{
+		EnableCommandGuard:   true,
+		EnableCommentChecker: true,
+		EnableSecretScanner:  true,
+		EnableSessionLogger:  true,
+		LintProfiles: []handlers.Profile{
+			handlers.GolangCILint(),
+			handlers.Ruff(),
+			handlers.Prettier(),
+		},
+		EnableContext7:               true,
+		EnablePulumiMCP:              true,
+		EnableCommitSkill:            true,
+		EnablePRSkill:                true,
+		EnableReviewSkill:            true,
+		EnablePulumiBestPractices:    true,
+		EnablePulumiComponent:        true,
+		EnablePulumiAutomationAPI:    true,
+		EnablePulumiESC:              true,
+		EnablePulumiTerraformMigrate: true,
+		EnablePulumiCDKMigrate:       true,
+		EnablePulumiCFNMigrate:       true,
+		EnablePulumiARMMigrate:       true,
+		EnablePulumiTypeScript:       true,
+		EnablePulumiGo:               true,
+		EnablePulumiPython:           true,
+		EnablePulumiNeo:              true,
+		EnablePulumiCLI:              true,
+		EnableGopls:                  true,
+		EnablePyright:                true,
+		EnableTypeScript:             true,
+		EnableCSharp:                 true,
+		EnableExecutor:               true,
+		EnableLibrarian:              true,
+		EnableReviewer:               true,
+		Settings: &schema.Settings{
+			Model:                 "opus",
+			AlwaysThinkingEnabled: &thinking,
+			EffortLevel:           "high",
+			AutoUpdatesChannel:    "latest",
+		},
+	}
+}
+
+// NewWithDefaults creates a Harness pre-loaded with built-in components.
+func NewWithDefaults(opts DefaultOptions) *Harness {
+	p := New()
+
+	if opts.Settings != nil {
+		p.SetSettings(opts.Settings)
+	}
+
+	// Handlers.
+	if len(opts.LintProfiles) > 0 {
+		p.Hooks().Register(handlers.NewLinterWith(opts.LintProfiles...))
+	}
+	if opts.EnableCommandGuard {
+		p.Hooks().Register(handlers.NewCommandGuard())
+	}
+	if opts.EnableCommentChecker {
+		p.Hooks().Register(handlers.NewCommentChecker())
+	}
+	if opts.EnableSecretScanner {
+		p.Hooks().Register(handlers.NewSecretScanner())
+	}
+	if opts.EnableSessionLogger {
+		p.Hooks().Register(handlers.NewSessionLogger(""))
+	}
+
+	// Providers.
+	if opts.EnableContext7 {
+		p.MCP().Register(mcpproviders.NewContext7())
+	}
+	if opts.EnablePulumiMCP {
+		p.MCP().Register(mcpproviders.NewPulumi())
+	}
+	if opts.NotionToken != "" {
+		p.MCP().Register(mcpproviders.NewNotion(opts.NotionToken))
+	}
+
+	// Skills.
+	if opts.EnableCommitSkill {
+		p.Skills().Register(builtins.NewCommitSkill())
+	}
+	if opts.EnablePRSkill {
+		p.Skills().Register(builtins.NewPRSkill())
+	}
+	if opts.EnableReviewSkill {
+		p.Skills().Register(builtins.NewReviewSkill())
+	}
+
+	// Remote skills — pulumi/agent-skills
+	if opts.EnablePulumiBestPractices {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-best-practices", "Pulumi best practices for reliable programs",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-best-practices/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiComponent {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-component", "Pulumi ComponentResource authoring",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-component/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiAutomationAPI {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-automation-api", "Pulumi Automation API best practices",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-automation-api/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiESC {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-esc", "Pulumi ESC environments, secrets, and configuration",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-esc/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiTerraformMigrate {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-terraform-to-pulumi", "Convert Terraform to Pulumi",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/pulumi-terraform-to-pulumi/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiCDKMigrate {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-cdk-to-pulumi", "Convert AWS CDK to Pulumi",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/pulumi-cdk-to-pulumi/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiCFNMigrate {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"cloudformation-to-pulumi", "Convert CloudFormation to Pulumi",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/cloudformation-to-pulumi/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiARMMigrate {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-arm-to-pulumi", "Convert Azure ARM/Bicep to Pulumi",
+			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/pulumi-arm-to-pulumi/SKILL.md",
+		))
+	}
+
+	// Remote skills — dirien/claude-skills
+	if opts.EnablePulumiTypeScript {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-typescript", "Pulumi TypeScript IaC with ESC and OIDC",
+			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-typescript/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiGo {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-go", "Pulumi Go IaC with ESC and OIDC",
+			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-go/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiPython {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-python", "Pulumi Python IaC with ESC and OIDC",
+			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-python/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiNeo {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-neo", "Pulumi Neo conversational infrastructure management",
+			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-neo/SKILL.md",
+		))
+	}
+	if opts.EnablePulumiCLI {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pulumi-cli", "Pulumi CLI command reference for deployments",
+			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-cli/SKILL.md",
+		))
+	}
+
+	// LSP servers.
+	if opts.EnableGopls {
+		p.LSP().Register(lspproviders.NewGopls())
+	}
+	if opts.EnablePyright {
+		p.LSP().Register(lspproviders.NewPyright())
+	}
+	if opts.EnableTypeScript {
+		p.LSP().Register(lspproviders.NewTypeScript())
+	}
+	if opts.EnableCSharp {
+		p.LSP().Register(lspproviders.NewCSharp())
+	}
+
+	// Agents.
+	if opts.EnableExecutor {
+		p.Agents().Register(agentpkg.NewExecutor())
+	}
+	if opts.EnableLibrarian {
+		p.Agents().Register(agentpkg.NewLibrarian())
+	}
+	if opts.EnableReviewer {
+		p.Agents().Register(agentpkg.NewReviewer())
+	}
+
+	return p
+}
