@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sort"
+	"strings"
 	"syscall"
 	"time"
 
@@ -255,15 +256,40 @@ func doctorCmd() *cobra.Command {
 				_, _ = fmt.Fprintln(out)
 			}
 
-			// 6. Lint tool binaries
+			// 6. Lint tool binaries + profile status
 			seen := make(map[string]bool)
 			var lintChecks []struct{ name, bin string }
+			var profileChecks []struct {
+				name         string
+				extensions   string
+				requiresFile string
+				active       bool
+			}
 			for _, h := range p.Hooks().Handlers() {
 				linter, ok := h.(*handlers.Linter)
 				if !ok {
 					continue
 				}
 				for _, prof := range linter.Profiles() {
+					// Check if the profile's required file exists in cwd.
+					active := true
+					if prof.RequiresFile != "" {
+						if _, err := os.Stat(prof.RequiresFile); os.IsNotExist(err) {
+							active = false
+						}
+					}
+					profileChecks = append(profileChecks, struct {
+						name         string
+						extensions   string
+						requiresFile string
+						active       bool
+					}{
+						name:         prof.Name,
+						extensions:   strings.Join(prof.Extensions, ", "),
+						requiresFile: prof.RequiresFile,
+						active:       active,
+					})
+
 					for _, step := range prof.Steps {
 						bin := step.Cmd[0]
 						if seen[bin] {
@@ -276,6 +302,17 @@ func doctorCmd() *cobra.Command {
 						})
 					}
 				}
+			}
+			if len(profileChecks) > 0 {
+				_, _ = fmt.Fprintln(out, "Lint Profiles:")
+				for _, pc := range profileChecks {
+					if pc.active {
+						_, _ = fmt.Fprintf(out, "  ✓ %-24s %s\n", pc.name, pc.extensions)
+					} else {
+						_, _ = fmt.Fprintf(out, "  ⊘ %-24s %s (skipped — %s not found)\n", pc.name, pc.extensions, pc.requiresFile)
+					}
+				}
+				_, _ = fmt.Fprintln(out)
 			}
 			if len(lintChecks) > 0 {
 				_, _ = fmt.Fprintln(out, "Lint Tools:")
