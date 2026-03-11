@@ -1,7 +1,11 @@
 package harness
 
 import (
+	"context"
+	"regexp"
+
 	agentpkg "github.com/dirien/yet-another-agent-harness/pkg/agents"
+	"github.com/dirien/yet-another-agent-harness/pkg/hooks"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks/handlers"
 	lspproviders "github.com/dirien/yet-another-agent-harness/pkg/lsp/providers"
 	mcpproviders "github.com/dirien/yet-another-agent-harness/pkg/mcp/providers"
@@ -13,15 +17,17 @@ import (
 // DefaultOptions controls which built-in components to enlist.
 type DefaultOptions struct {
 	// Handlers
-	EnableCommandGuard   bool
-	EnableCommentChecker bool
-	EnableSecretScanner  bool
-	EnableSessionLogger  bool
-	LintProfiles         []handlers.Profile
+	EnableCommandGuard      bool
+	EnableCommentChecker    bool
+	EnableSecretScanner     bool
+	EnableSecretRemediation bool
+	EnableSessionLogger     bool
+	LintProfiles            []handlers.Profile
 
 	// Providers (MCP)
 	EnableContext7  bool
 	EnablePulumiMCP bool
+	EnableYaahMCP   bool
 	NotionToken     string
 
 	// Skills
@@ -80,10 +86,11 @@ type DefaultOptions struct {
 func AllDefaults() DefaultOptions {
 	thinking := true
 	return DefaultOptions{
-		EnableCommandGuard:   true,
-		EnableCommentChecker: true,
-		EnableSecretScanner:  true,
-		EnableSessionLogger:  true,
+		EnableCommandGuard:      true,
+		EnableCommentChecker:    true,
+		EnableSecretScanner:     true,
+		EnableSecretRemediation: true,
+		EnableSessionLogger:     true,
 		LintProfiles: []handlers.Profile{
 			handlers.GolangCILint(),
 			handlers.Ruff(),
@@ -91,6 +98,7 @@ func AllDefaults() DefaultOptions {
 		},
 		EnableContext7:               true,
 		EnablePulumiMCP:              true,
+		EnableYaahMCP:                true,
 		EnableCommitSkill:            true,
 		EnablePRSkill:                true,
 		EnableReviewSkill:            true,
@@ -154,7 +162,19 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnableCommentChecker {
 		p.Hooks().Register(handlers.NewCommentChecker())
 	}
-	if opts.EnableSecretScanner {
+	if opts.EnableSecretRemediation {
+		chain := hooks.NewChain(
+			"secret-remediation",
+			[]schema.HookEvent{schema.HookPostToolUse},
+			regexp.MustCompile(`^(Edit|Write|MultiEdit)$`),
+			hooks.HandlerLink(handlers.NewSecretScanner()),
+			hooks.OnBlock(func(_ context.Context, _ *hooks.Input, prev *hooks.Result) (*hooks.Result, error) {
+				prev.Output += "\n\nRemediation: Move the detected secret to an environment variable or a secrets manager."
+				return prev, nil
+			}),
+		)
+		p.Hooks().Register(chain)
+	} else if opts.EnableSecretScanner {
 		p.Hooks().Register(handlers.NewSecretScanner())
 	}
 	if opts.EnableSessionLogger {
@@ -167,6 +187,9 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 	if opts.EnablePulumiMCP {
 		p.MCP().Register(mcpproviders.NewPulumi())
+	}
+	if opts.EnableYaahMCP {
+		p.MCP().Register(mcpproviders.NewYaah())
 	}
 	if opts.NotionToken != "" {
 		p.MCP().Register(mcpproviders.NewNotion(opts.NotionToken))

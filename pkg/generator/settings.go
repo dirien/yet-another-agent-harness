@@ -102,13 +102,13 @@ type claudeSettingsHookHandler struct {
 }
 
 type claudeMCPServer struct {
-	Transport string            `json:"transport,omitempty"`
-	Command   string            `json:"command,omitempty"`
-	Args      []string          `json:"args,omitempty"`
-	URL       string            `json:"url,omitempty"`
-	Env       map[string]string `json:"env,omitempty"`
-	Headers   map[string]string `json:"headers,omitempty"`
-	OAuth     *schema.MCPOAuth  `json:"oauth,omitempty"`
+	Type    string            `json:"type,omitempty"`
+	Command string            `json:"command,omitempty"`
+	Args    []string          `json:"args,omitempty"`
+	URL     string            `json:"url,omitempty"`
+	Env     map[string]string `json:"env,omitempty"`
+	Headers map[string]string `json:"headers,omitempty"`
+	OAuth   *schema.MCPOAuth  `json:"oauth,omitempty"`
 }
 
 // GenerateClaudeSettings converts a HarnessConfig into Claude Code's settings.json format.
@@ -213,13 +213,13 @@ func GenerateClaudeSettings(cfg *schema.HarnessConfig) ([]byte, error) {
 		out.McpServers = make(map[string]claudeMCPServer)
 		for _, srv := range cfg.MCP.Servers {
 			out.McpServers[srv.Name] = claudeMCPServer{
-				Transport: string(srv.Transport),
-				Command:   srv.Command,
-				Args:      srv.Args,
-				URL:       srv.URL,
-				Env:       srv.Env,
-				Headers:   srv.Headers,
-				OAuth:     srv.OAuth,
+				Type:    string(srv.Transport),
+				Command: srv.Command,
+				Args:    srv.Args,
+				URL:     srv.URL,
+				Env:     srv.Env,
+				Headers: srv.Headers,
+				OAuth:   srv.OAuth,
 			}
 		}
 	}
@@ -227,6 +227,40 @@ func GenerateClaudeSettings(cfg *schema.HarnessConfig) ([]byte, error) {
 	data, err := json.MarshalIndent(out, "", "  ")
 	if err != nil {
 		return nil, fmt.Errorf("marshal settings: %w", err)
+	}
+	return data, nil
+}
+
+// mcpJSON is the format for .mcp.json (project-level MCP server config).
+type mcpJSON struct {
+	McpServers map[string]claudeMCPServer `json:"mcpServers"`
+}
+
+// GenerateMCPJSON produces .mcp.json content from the MCP config.
+// This is the project-level MCP config that Claude Code discovers automatically.
+func GenerateMCPJSON(cfg *schema.HarnessConfig) ([]byte, error) {
+	if cfg.MCP == nil || len(cfg.MCP.Servers) == 0 {
+		return nil, nil
+	}
+
+	out := mcpJSON{
+		McpServers: make(map[string]claudeMCPServer),
+	}
+	for _, srv := range cfg.MCP.Servers {
+		out.McpServers[srv.Name] = claudeMCPServer{
+			Type:    string(srv.Transport),
+			Command: srv.Command,
+			Args:    srv.Args,
+			URL:     srv.URL,
+			Env:     srv.Env,
+			Headers: srv.Headers,
+			OAuth:   srv.OAuth,
+		}
+	}
+
+	data, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("marshal mcp.json: %w", err)
 	}
 	return data, nil
 }

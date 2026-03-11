@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -68,31 +69,37 @@ func (v *SecretScanner) Events() []schema.HookEvent {
 	return []schema.HookEvent{schema.HookPostToolUse}
 }
 
+var editWriteMatch = regexp.MustCompile(`^(Edit|Write|MultiEdit)$`)
+
 func (v *SecretScanner) Match() *regexp.Regexp {
-	return regexp.MustCompile(`^(Edit|Write|MultiEdit)$`)
+	return editWriteMatch
 }
 
 func (v *SecretScanner) FileExtensions() []string {
 	return nil // scan all text files
 }
 
-func (v *SecretScanner) Execute(_ context.Context, input *hooks.Input) (*hooks.Result, error) {
-	fp := input.FilePath()
-	if fp == "" {
+// SecretFinding represents a single secret detected in a file.
+type SecretFinding struct {
+	FilePath string `json:"file_path"`
+	Line     int    `json:"line"`
+	Pattern  string `json:"pattern"`
+}
+
+// ScanFile scans a file for secrets and returns any findings.
+// Returns nil if the file is binary or cannot be opened.
+func (v *SecretScanner) ScanFile(filePath string) ([]SecretFinding, error) {
+	if isLikelyBinary(filePath) {
 		return nil, nil
 	}
 
-	if isLikelyBinary(fp) {
-		return nil, nil
-	}
-
-	f, err := os.Open(fp)
+	f, err := os.Open(filePath)
 	if err != nil {
-		return nil, nil
+		return nil, fmt.Errorf("open file: %w", err)
 	}
 	defer func() { _ = f.Close() }()
 
-	var findings []string
+	var findings []SecretFinding
 	scanner := bufio.NewScanner(f)
 	lineNum := 0
 
@@ -101,15 +108,42 @@ func (v *SecretScanner) Execute(_ context.Context, input *hooks.Input) (*hooks.R
 		line := scanner.Text()
 		for _, p := range v.patterns {
 			if p.re.MatchString(line) {
-				findings = append(findings, fmt.Sprintf("  %s:%d: possible %s", fp, lineNum, p.label))
+				findings = append(findings, SecretFinding{
+					FilePath: filePath,
+					Line:     lineNum,
+					Pattern:  p.label,
+				})
 				break
 			}
 		}
 	}
+	if err := scanner.Err(); err != nil {
+		return findings, fmt.Errorf("scan file %s: %w", filePath, err)
+	}
+
+	return findings, nil
+}
+
+func (v *SecretScanner) Execute(_ context.Context, input *hooks.Input) (*hooks.Result, error) {
+	fp := input.FilePath()
+	if fp == "" {
+		return nil, nil
+	}
+
+	findings, err := v.ScanFile(fp)
+	if err != nil {
+		return &hooks.Result{
+			Error: fmt.Sprintf("secret-scanner: %v", err),
+		}, nil
+	}
 
 	if len(findings) > 0 {
+		lines := make([]string, len(findings))
+		for i, f := range findings {
+			lines[i] = fmt.Sprintf("  %s:%d: possible %s", f.FilePath, f.Line, f.Pattern)
+		}
 		return &hooks.Result{
-			Error: fmt.Sprintf("secret-scanner found %d potential secret(s):\n%s\nDo NOT commit these. Use environment variables or a secrets manager instead.", len(findings), strings.Join(findings, "\n")),
+			Error: fmt.Sprintf("secret-scanner found %d potential secret(s):\n%s\nDo NOT commit these. Use environment variables or a secrets manager instead.", len(findings), strings.Join(lines, "\n")),
 			Block: true,
 		}, nil
 	}
@@ -126,10 +160,5 @@ var binaryExts = map[string]bool{
 }
 
 func isLikelyBinary(path string) bool {
-	for ext := range binaryExts {
-		if strings.HasSuffix(path, ext) {
-			return true
-		}
-	}
-	return false
+	return binaryExts[filepath.Ext(path)]
 }

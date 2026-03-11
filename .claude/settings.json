@@ -60,7 +60,7 @@
   },
   "mcpServers": {
     "context7": {
-      "transport": "stdio",
+      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -68,8 +68,15 @@
       ]
     },
     "pulumi": {
-      "transport": "http",
+      "type": "http",
       "url": "https://mcp.ai.pulumi.com/mcp"
+    },
+    "yaah": {
+      "type": "stdio",
+      "command": "yaah",
+      "args": [
+        "serve"
+      ]
     }
   },
   "enabledPlugins": {

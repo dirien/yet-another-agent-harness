@@ -24,6 +24,11 @@ func (c *Registry) Register(s Handler) {
 	c.handlers = append(c.handlers, s)
 }
 
+// RegisterChain adds a chain to the registry. The chain behaves as a single Handler.
+func (c *Registry) RegisterChain(chain *Chain) {
+	c.Register(chain)
+}
+
 // Dispatch finds all handlers matching the event and input, executes them,
 // and returns the combined results.
 func (c *Registry) Dispatch(ctx context.Context, event schema.HookEvent, input *Input) ([]*Result, error) {

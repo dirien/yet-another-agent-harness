@@ -50,8 +50,30 @@ func (c *CommandGuard) Events() []schema.HookEvent {
 	return []schema.HookEvent{schema.HookPreToolUse}
 }
 
+var bashMatch = regexp.MustCompile(`^Bash$`)
+
 func (c *CommandGuard) Match() *regexp.Regexp {
-	return regexp.MustCompile(`^Bash$`)
+	return bashMatch
+}
+
+// CommandCheckResult describes the outcome of checking a command.
+type CommandCheckResult struct {
+	Safe   bool   `json:"safe"`
+	Reason string `json:"reason"`
+}
+
+// CheckCommand checks whether the given command string is safe.
+// Returns a result indicating whether the command is safe and why.
+func (c *CommandGuard) CheckCommand(cmd string) CommandCheckResult {
+	for _, rule := range c.blocked {
+		if rule.pattern.MatchString(cmd) {
+			return CommandCheckResult{
+				Safe:   false,
+				Reason: fmt.Sprintf("BLOCKED: %s (matched: %s)", rule.reason, rule.pattern.String()),
+			}
+		}
+	}
+	return CommandCheckResult{Safe: true, Reason: "command is safe"}
 }
 
 func (c *CommandGuard) Execute(_ context.Context, input *hooks.Input) (*hooks.Result, error) {

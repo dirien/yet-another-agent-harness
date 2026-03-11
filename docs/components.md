@@ -71,6 +71,36 @@ Writes session start/stop events with timestamps to a log file.
 h.Hooks().Register(handlers.NewSessionLogger("/var/log/claude-sessions"))
 ```
 
+### Middleware chains
+
+Chain multiple handlers into a sequential pipeline. Each link receives the previous link's result, enabling composed workflows like "scan for secrets, then suggest remediation if blocked."
+
+```go
+import "github.com/dirien/yet-another-agent-harness/pkg/hooks"
+
+chain := hooks.NewChain("secret-remediation",
+    []schema.HookEvent{schema.HookPostToolUse},
+    regexp.MustCompile(`^(Edit|Write|MultiEdit)$`),
+    hooks.HandlerLink(handlers.NewSecretScanner()),
+    hooks.OnBlock(func(ctx context.Context, input *hooks.Input, prev *hooks.Result) (*hooks.Result, error) {
+        prev.Output += "\n\nRemediation: Move the secret to an env var or secrets manager."
+        return prev, nil
+    }),
+)
+h.Hooks().Register(chain)
+```
+
+Available combinators:
+
+| Combinator    | Description                                                    |
+| ------------- | -------------------------------------------------------------- |
+| `HandlerLink` | Wraps a `Handler` as a chain link                              |
+| `OnBlock`     | Runs only when the previous link blocked (`result.Block=true`) |
+| `OnError`     | Runs only when the previous link returned an error             |
+| `Transform`   | Runs unconditionally, receives the previous result             |
+
+Chains implement the `Handler` interface, so they can be registered like any other handler or nested inside other chains.
+
 ### Writing your own
 
 Implement the `hooks.Handler` interface:
@@ -104,7 +134,7 @@ Register it with `h.Hooks().Register(myHandler)`. The generated `settings.json` 
 
 ## MCP servers
 
-Three built-in providers, plus a generic `Custom` for anything else.
+Four built-in providers, plus a generic `Custom` for anything else.
 
 ```go
 import "github.com/dirien/yet-another-agent-harness/pkg/mcp/providers"
@@ -112,6 +142,7 @@ import "github.com/dirien/yet-another-agent-harness/pkg/mcp/providers"
 h.MCP().Register(providers.NewContext7())
 h.MCP().Register(providers.NewPulumi())
 h.MCP().Register(providers.NewNotion("ntn-your-api-token"))
+h.MCP().Register(providers.NewYaah())  // self-referencing yaah MCP server
 h.MCP().Register(providers.NewCustom(schema.MCPServer{
     Name:      "my-server",
     Transport: schema.MCPTransportStdio,
@@ -119,6 +150,38 @@ h.MCP().Register(providers.NewCustom(schema.MCPServer{
     Args:      []string{"--mode", "production"},
 }))
 ```
+
+### yaah MCP server
+
+yaah includes a built-in MCP server (`yaah serve`) that exposes its capabilities as tools Claude Code can call directly. The server uses the [official Go MCP SDK](https://github.com/modelcontextprotocol/go-sdk) and communicates over stdio.
+
+| Tool                 | Description                                         |
+| -------------------- | --------------------------------------------------- |
+| `yaah_scan_secrets`  | Scan a file for hardcoded secrets and credentials   |
+| `yaah_lint`          | Run lint checks on a file using configured profiles |
+| `yaah_check_command` | Check whether a shell command is safe to run        |
+| `yaah_doctor`        | Run health checks and report missing dependencies   |
+| `yaah_session_info`  | Query session history or get server info            |
+
+The MCP server reuses the same handler instances registered in the harness, so lint profiles, secret patterns, and command guard rules all apply.
+
+#### Project-level discovery
+
+`yaah generate` produces a `.mcp.json` file at the project root. Claude Code auto-discovers this file and connects to the servers listed in it. No manual configuration needed — just run `yaah generate` and start a new Claude Code session.
+
+```json
+{
+  "mcpServers": {
+    "yaah": {
+      "type": "stdio",
+      "command": "yaah",
+      "args": ["serve"]
+    }
+  }
+}
+```
+
+The `.mcp.json` file is separate from `.claude/settings.json`. It is Claude Code's official mechanism for project-level MCP server registration.
 
 Transport options: `stdio`, `sse`, `streamable-http`, `http`, `websocket`.
 
@@ -356,3 +419,67 @@ The `schema.Plugin` struct matches the official Claude Code `plugin.json` spec.
 | `mcpServers`   | string      | Path to `.mcp.json` or inline MCP config         |
 | `lspServers`   | string      | Path to `.lsp.json` or inline LSP config         |
 | `outputStyles` | string      | Path to output styles directory                  |
+
+## Session store
+
+The session store provides a persistent audit trail for every Claude Code session. It records hook events, tool calls, blocked commands, file modifications, and security findings to JSON files.
+
+### How it works
+
+1. Claude Code sets a `CLAUDE_SESSION_ID` environment variable for each session
+2. Every hook event flows through the harness's `HandleHookEvent` method
+3. The harness loads (or creates) a session file at `.claude/sessions/<session-id>.json`
+4. It records the event details and persists back to disk with atomic writes (temp file + rename)
+
+### What gets tracked
+
+| Field            | Type             | Description                                       |
+| ---------------- | ---------------- | ------------------------------------------------- |
+| `id`             | string           | Session identifier from Claude Code               |
+| `started_at`     | timestamp        | When the session started                          |
+| `last_event_at`  | timestamp        | When the last hook event fired                    |
+| `event_count`    | int              | Total number of hook events                       |
+| `tool_calls`     | []ToolCallRecord | Every tool invocation with name, input, timestamp |
+| `blocked_calls`  | []ToolCallRecord | Commands blocked by the guard, with reasons       |
+| `files_modified` | []string         | Absolute paths of files that were edited          |
+| `findings`       | []Finding        | Secrets detected, lint issues, security findings  |
+
+### CLI commands
+
+```bash
+yaah session list              # List recent sessions (sorted by last activity)
+yaah session show <id>         # Full details: tool calls, blocked commands, findings
+yaah session clean             # Remove sessions older than 7 days
+```
+
+### MCP access
+
+The `yaah_session_info` MCP tool lets Claude Code query session history mid-conversation:
+
+```
+# Called by Claude Code via MCP:
+yaah_session_info {}                          # Returns server info
+yaah_session_info {"session_id": "abc123"}    # Returns full session details
+```
+
+### Programmatic access
+
+```go
+store := harness.SessionStore()
+
+// Load a specific session
+sess, err := store.Load("session-id")
+
+// List all sessions
+sessions, err := store.List()
+
+// Save a session
+err := store.Save(sess)
+
+// Clean up old sessions
+deleted, err := store.Cleanup(7 * 24 * time.Hour)
+```
+
+### Security
+
+Session IDs are validated to prevent path traversal attacks. IDs containing path separators (`/`, `\`) or special values (`.`, `..`) are rejected.

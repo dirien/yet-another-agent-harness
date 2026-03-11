@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/dirien/yet-another-agent-harness/pkg/agents"
 	"github.com/dirien/yet-another-agent-harness/pkg/commands"
@@ -15,6 +16,7 @@ import (
 	"github.com/dirien/yet-another-agent-harness/pkg/mcp"
 	"github.com/dirien/yet-another-agent-harness/pkg/plugins"
 	"github.com/dirien/yet-another-agent-harness/pkg/schema"
+	"github.com/dirien/yet-another-agent-harness/pkg/session"
 	"github.com/dirien/yet-another-agent-harness/pkg/skills"
 )
 
@@ -24,26 +26,28 @@ var ErrHookBlocked = errors.New("hook blocked the action")
 
 // Harness is the top-level runtime wiring together every component.
 type Harness struct {
-	hooks    *hooks.Registry
-	mcp      *mcp.Registry
-	lsp      *lsp.Registry
-	skills   *skills.Registry
-	agents   *agents.Registry
-	commands *commands.Registry
-	plugins  *plugins.Registry
-	settings *schema.Settings
+	hooks        *hooks.Registry
+	mcp          *mcp.Registry
+	lsp          *lsp.Registry
+	skills       *skills.Registry
+	agents       *agents.Registry
+	commands     *commands.Registry
+	plugins      *plugins.Registry
+	settings     *schema.Settings
+	sessionStore *session.Store
 }
 
 // New creates a new Harness with empty registries.
 func New() *Harness {
 	return &Harness{
-		hooks:    hooks.NewRegistry(),
-		mcp:      mcp.NewRegistry(),
-		lsp:      lsp.NewRegistry(),
-		skills:   skills.NewRegistry(),
-		agents:   agents.NewRegistry(),
-		commands: commands.NewRegistry(),
-		plugins:  plugins.NewRegistry(),
+		hooks:        hooks.NewRegistry(),
+		mcp:          mcp.NewRegistry(),
+		lsp:          lsp.NewRegistry(),
+		skills:       skills.NewRegistry(),
+		agents:       agents.NewRegistry(),
+		commands:     commands.NewRegistry(),
+		plugins:      plugins.NewRegistry(),
+		sessionStore: session.NewStore(filepath.Join(".claude", "sessions")),
 	}
 }
 
@@ -68,28 +72,124 @@ func (p *Harness) Commands() *commands.Registry { return p.commands }
 // Plugins returns the plugin registry for registering plugins.
 func (p *Harness) Plugins() *plugins.Registry { return p.plugins }
 
+// SessionStore returns the session store for querying session state.
+func (p *Harness) SessionStore() *session.Store { return p.sessionStore }
+
 // SetSettings sets the base Claude Code settings.
 func (p *Harness) SetSettings(s *schema.Settings) { p.settings = s }
 
 // HandleHookEvent dispatches a hook event through all enlisted handlers.
+// It also records the event in the session store when a session ID is present.
 // Returns ErrHookBlocked if any handler signals that the action should be blocked.
 func (p *Harness) HandleHookEvent(ctx context.Context, event schema.HookEvent, input *hooks.Input) error {
+	// Load session state (if we have a session ID).
+	var sess *session.Session
+	if input.SessionID != "" {
+		var err error
+		sess, err = p.sessionStore.Load(input.SessionID)
+		if err != nil {
+			// Non-fatal: log and continue without session tracking.
+			_, _ = fmt.Fprintf(os.Stderr, "session load: %v\n", err)
+			sess = nil
+		}
+	}
+
+	// Record the tool call before dispatching.
+	now := time.Now().UTC()
+	var record *session.ToolCallRecord
+	if sess != nil && input.ToolName != "" {
+		record = &session.ToolCallRecord{
+			Timestamp: now,
+			ToolName:  input.ToolName,
+			Input:     summarizeToolInput(input),
+		}
+	}
+
+	// Dispatch to handlers.
 	results, err := p.hooks.Dispatch(ctx, event, input)
 	if err != nil {
 		return err
 	}
 
 	combined := hooks.CombineResults(results)
+	blocked := combined.Block
+
+	// Update session state.
+	if sess != nil {
+		sess.LastEventAt = now
+		sess.EventCount++
+
+		if record != nil {
+			if blocked {
+				record.Blocked = true
+				record.Reason = combined.Error
+				sess.BlockedCalls = append(sess.BlockedCalls, *record)
+			}
+			sess.ToolCalls = append(sess.ToolCalls, *record)
+		}
+
+		// Track file modifications from Edit/Write tools.
+		if fp := input.FilePath(); fp != "" && !blocked {
+			if input.ToolName == "Edit" || input.ToolName == "Write" || input.ToolName == "MultiEdit" {
+				if !containsString(sess.FilesModified, fp) {
+					sess.FilesModified = append(sess.FilesModified, fp)
+				}
+			}
+		}
+
+		// Save session (best-effort).
+		if saveErr := p.sessionStore.Save(sess); saveErr != nil {
+			_, _ = fmt.Fprintf(os.Stderr, "session save: %v\n", saveErr)
+		}
+	}
+
 	if combined.Output != "" {
 		_, _ = fmt.Fprint(os.Stdout, combined.Output)
 	}
 	if combined.Error != "" {
 		_, _ = fmt.Fprint(os.Stderr, combined.Error)
 	}
-	if combined.Block {
+	if blocked {
 		return ErrHookBlocked
 	}
 	return nil
+}
+
+// summarizeToolInput returns a short summary of the tool input for session recording.
+func summarizeToolInput(input *hooks.Input) string {
+	if len(input.ToolInput) == 0 {
+		return ""
+	}
+
+	// Try to extract file_path first.
+	if fp := input.FilePath(); fp != "" {
+		return fp
+	}
+
+	// Try to extract bash command.
+	if cmd := input.BashCommand(); cmd != "" {
+		if len(cmd) > 120 {
+			return cmd[:120] + "..."
+		}
+		return cmd
+	}
+
+	// Fall back to a truncated JSON representation.
+	raw := string(input.ToolInput)
+	if len(raw) > 120 {
+		return raw[:120] + "..."
+	}
+	return raw
+}
+
+// containsString checks if a string slice contains the given value.
+func containsString(ss []string, s string) bool {
+	for _, v := range ss {
+		if v == s {
+			return true
+		}
+	}
+	return false
 }
 
 // GenerateConfig builds a complete HarnessConfig from all registered components.

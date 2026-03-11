@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@context7/mcp"
+      ]
+    },
+    "pulumi": {
+      "type": "http",
+      "url": "https://mcp.ai.pulumi.com/mcp"
+    },
+    "yaah": {
+      "type": "stdio",
+      "command": "yaah",
+      "args": [
+        "serve"
+      ]
+    }
+  }
+}

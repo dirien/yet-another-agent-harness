@@ -7,13 +7,18 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
+	"sort"
+	"syscall"
+	"time"
 
 	"github.com/dirien/yet-another-agent-harness/pkg/generator"
 	harnesspkg "github.com/dirien/yet-another-agent-harness/pkg/harness"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks/handlers"
 	"github.com/dirien/yet-another-agent-harness/pkg/lsp"
+	"github.com/dirien/yet-another-agent-harness/pkg/mcpserver"
 	"github.com/dirien/yet-another-agent-harness/pkg/schema"
 	"github.com/spf13/cobra"
 )
@@ -43,6 +48,8 @@ func main() {
 		infoCmd(),
 		versionCmd(),
 		doctorCmd(),
+		serveCmd(),
+		sessionCmd(),
 	)
 
 	if err := root.Execute(); err != nil {
@@ -83,6 +90,20 @@ func generateCmd() *cobra.Command {
 			}
 
 			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", outPath)
+
+			// Generate .mcp.json for project-level MCP server discovery.
+			mcpData, err := generator.GenerateMCPJSON(cfg)
+			if err != nil {
+				return err
+			}
+			if mcpData != nil {
+				mcpPath := filepath.Join(outputDir, ".mcp.json")
+				if err := os.WriteFile(mcpPath, mcpData, 0o644); err != nil {
+					return fmt.Errorf("write .mcp.json: %w", err)
+				}
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", mcpPath)
+			}
+
 			return nil
 		},
 	}
@@ -136,6 +157,20 @@ func infoCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			p := newHarness()
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), p.Summary())
+		},
+	}
+}
+
+func serveCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "serve",
+		Short: "Start the yaah MCP server over stdio",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+			defer stop()
+			p := newHarness()
+			srv := mcpserver.New(p)
+			return srv.Start(ctx)
 		},
 	}
 }
@@ -262,6 +297,145 @@ func doctorCmd() *cobra.Command {
 			} else {
 				_, _ = fmt.Fprintf(out, "%d issue(s) found. Install missing tools to get full functionality.\n", issues)
 			}
+			return nil
+		},
+	}
+}
+
+// sessionCmd is the parent command for session management subcommands.
+func sessionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "session",
+		Short: "Manage Claude Code session state",
+	}
+
+	cmd.AddCommand(
+		sessionListCmd(),
+		sessionShowCmd(),
+		sessionCleanCmd(),
+	)
+
+	return cmd
+}
+
+func sessionListCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "list",
+		Short: "List recent sessions",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			p := newHarness()
+			sessions, err := p.SessionStore().List()
+			if err != nil {
+				return fmt.Errorf("list sessions: %w", err)
+			}
+
+			if len(sessions) == 0 {
+				_, _ = fmt.Fprintln(cmd.OutOrStdout(), "No sessions found.")
+				return nil
+			}
+
+			// Sort by LastEventAt descending (most recent first).
+			sort.Slice(sessions, func(i, j int) bool {
+				ti := sessions[i].LastEventAt
+				if ti.IsZero() {
+					ti = sessions[i].StartedAt
+				}
+				tj := sessions[j].LastEventAt
+				if tj.IsZero() {
+					tj = sessions[j].StartedAt
+				}
+				return ti.After(tj)
+			})
+
+			out := cmd.OutOrStdout()
+			_, _ = fmt.Fprintf(out, "%-40s %-22s %-8s %-22s\n", "ID", "STARTED", "EVENTS", "LAST EVENT")
+			_, _ = fmt.Fprintf(out, "%-40s %-22s %-8s %-22s\n", "---", "---", "---", "---")
+			for _, sess := range sessions {
+				started := sess.StartedAt.Format(time.RFC3339)
+				lastEvent := "-"
+				if !sess.LastEventAt.IsZero() {
+					lastEvent = sess.LastEventAt.Format(time.RFC3339)
+				}
+				_, _ = fmt.Fprintf(out, "%-40s %-22s %-8d %-22s\n",
+					sess.ID, started, sess.EventCount, lastEvent)
+			}
+			return nil
+		},
+	}
+}
+
+func sessionShowCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "show <id>",
+		Short: "Show full details for a session",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			p := newHarness()
+			sess, err := p.SessionStore().Load(args[0])
+			if err != nil {
+				return fmt.Errorf("load session: %w", err)
+			}
+
+			out := cmd.OutOrStdout()
+			_, _ = fmt.Fprintf(out, "Session:      %s\n", sess.ID)
+			_, _ = fmt.Fprintf(out, "Started:      %s\n", sess.StartedAt.Format(time.RFC3339))
+			if !sess.LastEventAt.IsZero() {
+				_, _ = fmt.Fprintf(out, "Last Event:   %s\n", sess.LastEventAt.Format(time.RFC3339))
+			}
+			_, _ = fmt.Fprintf(out, "Event Count:  %d\n", sess.EventCount)
+
+			if len(sess.ToolCalls) > 0 {
+				_, _ = fmt.Fprintf(out, "\nTool Calls (%d):\n", len(sess.ToolCalls))
+				for _, tc := range sess.ToolCalls {
+					blocked := ""
+					if tc.Blocked {
+						blocked = " [BLOCKED]"
+					}
+					_, _ = fmt.Fprintf(out, "  %s  %-20s %s%s\n",
+						tc.Timestamp.Format(time.RFC3339), tc.ToolName, tc.Input, blocked)
+				}
+			}
+
+			if len(sess.BlockedCalls) > 0 {
+				_, _ = fmt.Fprintf(out, "\nBlocked Calls (%d):\n", len(sess.BlockedCalls))
+				for _, bc := range sess.BlockedCalls {
+					_, _ = fmt.Fprintf(out, "  %s  %-20s reason=%s\n",
+						bc.Timestamp.Format(time.RFC3339), bc.ToolName, bc.Reason)
+				}
+			}
+
+			if len(sess.FilesModified) > 0 {
+				_, _ = fmt.Fprintf(out, "\nFiles Modified (%d):\n", len(sess.FilesModified))
+				for _, f := range sess.FilesModified {
+					_, _ = fmt.Fprintf(out, "  %s\n", f)
+				}
+			}
+
+			if len(sess.Findings) > 0 {
+				_, _ = fmt.Fprintf(out, "\nFindings (%d):\n", len(sess.Findings))
+				for _, f := range sess.Findings {
+					_, _ = fmt.Fprintf(out, "  [%s] %s %s:%d %s\n",
+						f.Severity, f.Type, f.File, f.Line, f.Message)
+				}
+			}
+
+			return nil
+		},
+	}
+}
+
+func sessionCleanCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "clean",
+		Short: "Remove sessions older than 7 days",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			p := newHarness()
+			deleted, err := p.SessionStore().Cleanup(7 * 24 * time.Hour)
+			if err != nil {
+				return fmt.Errorf("cleanup sessions: %w", err)
+			}
+
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Removed %d session(s) older than 7 days.\n", deleted)
 			return nil
 		},
 	}

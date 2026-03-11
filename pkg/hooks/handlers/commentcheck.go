@@ -57,7 +57,7 @@ func (c *CommentChecker) Events() []schema.HookEvent {
 }
 
 func (c *CommentChecker) Match() *regexp.Regexp {
-	return regexp.MustCompile(`^(Edit|Write|MultiEdit)$`)
+	return editWriteMatch
 }
 
 func (c *CommentChecker) FileExtensions() []string {

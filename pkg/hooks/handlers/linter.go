@@ -152,7 +152,7 @@ func (t *Linter) Events() []schema.HookEvent {
 }
 
 func (t *Linter) Match() *regexp.Regexp {
-	return regexp.MustCompile(`^(Edit|Write|MultiEdit)$`)
+	return editWriteMatch
 }
 
 func (t *Linter) FileExtensions() []string {
@@ -161,6 +161,62 @@ func (t *Linter) FileExtensions() []string {
 		exts = append(exts, ext)
 	}
 	return exts
+}
+
+// LintFile runs the lint pipeline for the given file path.
+// If profileName is non-empty, only that profile is used; otherwise the profile
+// is selected by file extension. Returns the combined lint output and whether
+// the lint blocked (i.e. a FailBlocks step failed).
+func (t *Linter) LintFile(ctx context.Context, filePath, profileName, cwd string) (output string, blocked bool, err error) {
+	if _, statErr := os.Stat(filePath); os.IsNotExist(statErr) {
+		return "", false, fmt.Errorf("file not found: %s", filePath)
+	}
+
+	var profile *Profile
+	if profileName != "" {
+		for i := range t.profiles {
+			if t.profiles[i].Name == profileName {
+				profile = &t.profiles[i]
+				break
+			}
+		}
+		if profile == nil {
+			return "", false, fmt.Errorf("unknown profile: %s", profileName)
+		}
+	} else {
+		ext := filepath.Ext(filePath)
+		profile = t.extIndex[ext]
+		if profile == nil {
+			return "", false, fmt.Errorf("no lint profile for extension %q", ext)
+		}
+	}
+
+	var msgs []string
+	for _, step := range profile.Steps {
+		args := make([]string, len(step.Cmd))
+		copy(args, step.Cmd)
+		if step.AppendFile {
+			args = append(args, filePath)
+		}
+
+		cmd := exec.CommandContext(ctx, args[0], args[1:]...)
+		if cwd != "" {
+			cmd.Dir = cwd
+		}
+		out, cmdErr := cmd.CombinedOutput()
+		outStr := strings.TrimSpace(string(out))
+
+		if cmdErr != nil {
+			msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+			if step.FailBlocks {
+				return strings.Join(msgs, "\n"), true, nil
+			}
+		} else if outStr != "" {
+			msgs = append(msgs, fmt.Sprintf("[%s/%s] %s", profile.Name, step.Label, outStr))
+		}
+	}
+
+	return strings.Join(msgs, "\n"), false, nil
 }
 
 func (t *Linter) Execute(ctx context.Context, input *hooks.Input) (*hooks.Result, error) {
