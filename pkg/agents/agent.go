@@ -27,6 +27,14 @@ type AgentWithAdvanced interface {
 	Advanced() AgentAdvanced
 }
 
+// AgentWithSource is an optional interface for agents loaded from a remote
+// git repository, providing provenance information.
+type AgentWithSource interface {
+	Agent
+	Uses() string    // e.g. "github.com/owner/repo@ref"
+	Subpath() string // path within the repo
+}
+
 // AgentAdvanced holds optional advanced frontmatter fields for an agent.
 type AgentAdvanced struct {
 	DisallowedTools string

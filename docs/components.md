@@ -339,7 +339,7 @@ type Skill interface {
 
 ## Agents
 
-Agents produce markdown files with YAML frontmatter under `.claude/agents/`. Three ship by default:
+Agents produce markdown files with YAML frontmatter under `.claude/agents/`. Three ship as built-ins:
 
 - **executor** (sonnet) -- single-task, strict verification
 - **librarian** (haiku) -- research only, read-only tools
@@ -352,6 +352,49 @@ h.Agents().Register(agentpkg.NewExecutor())
 h.Agents().Register(agentpkg.NewLibrarian())
 h.Agents().Register(agentpkg.NewReviewer())
 ```
+
+### Remote agents
+
+Pin an agent to a remote git repo, same syntax as remote skills:
+
+```go
+import agentpkg "github.com/dirien/yet-another-agent-harness/pkg/agents"
+
+h.Agents().Register(agentpkg.NewRemoteAgent(
+    "my-custom-agent",
+    "What this agent does",
+    "github.com/owner/repo@v1.0.0",
+    "agents/my-agent.md",
+    agentpkg.WithModel("sonnet"),
+    agentpkg.WithTools("Read, Grep, Glob"),
+))
+```
+
+The ref can be a tag, branch, or commit SHA. Agents are cached in `~/.yaah/cache/agents/` and invalidated when the ref changes. If the remote markdown file contains YAML frontmatter, it is stripped so that yaah can re-generate clean frontmatter from the agent's metadata fields.
+
+Options:
+
+| Option           | Description                             |
+| ---------------- | --------------------------------------- |
+| `WithModel()`    | Model override (sonnet/opus/haiku)      |
+| `WithTools()`    | Comma-separated tool allowlist          |
+| `WithAdvanced()` | Advanced frontmatter fields (see below) |
+
+### Default remote agents
+
+yaah ships 9 remote agents from [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents):
+
+| Agent                            | Model  | Description                                                  |
+| -------------------------------- | ------ | ------------------------------------------------------------ |
+| `agency-ai-engineer`             | sonnet | AI/ML engineering, model integration, LLM pipelines          |
+| `agency-backend-architect`       | sonnet | Backend system design, API architecture, scalability         |
+| `agency-security-engineer`       | sonnet | Security analysis, threat modeling, vulnerability assessment |
+| `agency-code-reviewer`           | sonnet | Structured code review (read-only tools)                     |
+| `agency-software-architect`      | opus   | System architecture, design patterns, technical decisions    |
+| `agency-devops-automator`        | sonnet | CI/CD pipelines, infrastructure automation, deployments      |
+| `agency-sre`                     | sonnet | Site reliability, observability, incident response           |
+| `agency-api-tester`              | sonnet | API testing, contract validation, endpoint coverage          |
+| `agency-performance-benchmarker` | sonnet | Performance profiling, load testing, optimization            |
 
 ### Advanced frontmatter
 
