@@ -363,7 +363,11 @@ func (p *Harness) WriteAll(baseDir string) error {
 		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 			return fmt.Errorf("write agent %s: %w", a.Name(), err)
 		}
-		_, _ = fmt.Fprintf(os.Stderr, "  agent    %-18s model=%s\n", a.Name(), a.Model())
+		_, _ = fmt.Fprintf(os.Stderr, "  agent    %-18s model=%s", a.Name(), a.Model())
+		if src, ok := a.(agents.AgentWithSource); ok && src.Uses() != "" {
+			_, _ = fmt.Fprintf(os.Stderr, " (remote: %s)", src.Uses())
+		}
+		_, _ = fmt.Fprintln(os.Stderr)
 	}
 
 	// LSP: enable marketplace plugins via enabledPlugins in settings.json.

@@ -25,7 +25,7 @@ That single command gives you:
 - LSP support for Go, Python, TypeScript, and C# via the official marketplace
 - Session tracking that logs every tool call, blocked command, and file modification across Claude Code sessions
 - 3 built-in skills (commit, PR, review) plus 26 remote skills covering Pulumi IaC, Go, Python, TypeScript, Kubernetes, DevOps, SRE, and more
-- 3 agents: executor (sonnet), librarian (haiku), reviewer (opus)
+- 12 agents: 3 built-in (executor, librarian, reviewer) plus 9 remote agents from [agency-agents](https://github.com/msitarzewski/agency-agents) covering AI engineering, backend architecture, security, code review, DevOps, SRE, and testing
 
 Don't want all of it? Turn off what you don't need:
 

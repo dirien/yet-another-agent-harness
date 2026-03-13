@@ -78,6 +78,17 @@ type DefaultOptions struct {
 	EnableLibrarian bool
 	EnableReviewer  bool
 
+	// Remote agents — msitarzewski/agency-agents
+	EnableAgencyAIEngineer             bool
+	EnableAgencyBackendArchitect       bool
+	EnableAgencySecurityEngineer       bool
+	EnableAgencyCodeReviewerAgent      bool
+	EnableAgencySoftwareArchitect      bool
+	EnableAgencyDevOpsAutomator        bool
+	EnableAgencySRE                    bool
+	EnableAgencyAPITester              bool
+	EnableAgencyPerformanceBenchmarker bool
+
 	// Settings
 	Settings *schema.Settings
 }
@@ -97,45 +108,54 @@ func AllDefaults() DefaultOptions {
 			handlers.Prettier(),
 			handlers.TypeScript(),
 		},
-		EnableContext7:               true,
-		EnablePulumiMCP:              true,
-		EnableYaahMCP:                true,
-		EnableCommitSkill:            true,
-		EnablePRSkill:                true,
-		EnableReviewSkill:            true,
-		EnablePulumiBestPractices:    true,
-		EnablePulumiComponent:        true,
-		EnablePulumiAutomationAPI:    true,
-		EnablePulumiESC:              true,
-		EnablePulumiTerraformMigrate: true,
-		EnablePulumiCDKMigrate:       true,
-		EnablePulumiCFNMigrate:       true,
-		EnablePulumiARMMigrate:       true,
-		EnablePulumiTypeScript:       true,
-		EnablePulumiGo:               true,
-		EnablePulumiPython:           true,
-		EnablePulumiNeo:              true,
-		EnablePulumiCLI:              true,
-		EnableGolangPro:              true,
-		EnableKubernetesSpecialist:   true,
-		EnableDevOpsEngineer:         true,
-		EnablePythonPro:              true,
-		EnableTypeScriptPro:          true,
-		EnableCSharpDeveloper:        true,
-		EnableJavaScriptPro:          true,
-		EnableCLIDeveloper:           true,
-		EnableSREEngineer:            true,
-		EnableTheFool:                true,
-		EnableArchitectureDesigner:   true,
-		EnableSpringBootEngineer:     true,
-		EnableCodeReviewer:           true,
-		EnableGopls:                  true,
-		EnablePyright:                true,
-		EnableTypeScript:             true,
-		EnableCSharp:                 true,
-		EnableExecutor:               true,
-		EnableLibrarian:              true,
-		EnableReviewer:               true,
+		EnableContext7:                     true,
+		EnablePulumiMCP:                    true,
+		EnableYaahMCP:                      true,
+		EnableCommitSkill:                  true,
+		EnablePRSkill:                      true,
+		EnableReviewSkill:                  true,
+		EnablePulumiBestPractices:          true,
+		EnablePulumiComponent:              true,
+		EnablePulumiAutomationAPI:          true,
+		EnablePulumiESC:                    true,
+		EnablePulumiTerraformMigrate:       true,
+		EnablePulumiCDKMigrate:             true,
+		EnablePulumiCFNMigrate:             true,
+		EnablePulumiARMMigrate:             true,
+		EnablePulumiTypeScript:             true,
+		EnablePulumiGo:                     true,
+		EnablePulumiPython:                 true,
+		EnablePulumiNeo:                    true,
+		EnablePulumiCLI:                    true,
+		EnableGolangPro:                    true,
+		EnableKubernetesSpecialist:         true,
+		EnableDevOpsEngineer:               true,
+		EnablePythonPro:                    true,
+		EnableTypeScriptPro:                true,
+		EnableCSharpDeveloper:              true,
+		EnableJavaScriptPro:                true,
+		EnableCLIDeveloper:                 true,
+		EnableSREEngineer:                  true,
+		EnableTheFool:                      true,
+		EnableArchitectureDesigner:         true,
+		EnableSpringBootEngineer:           true,
+		EnableCodeReviewer:                 true,
+		EnableGopls:                        true,
+		EnablePyright:                      true,
+		EnableTypeScript:                   true,
+		EnableCSharp:                       true,
+		EnableExecutor:                     true,
+		EnableLibrarian:                    true,
+		EnableReviewer:                     true,
+		EnableAgencyAIEngineer:             true,
+		EnableAgencyBackendArchitect:       true,
+		EnableAgencySecurityEngineer:       true,
+		EnableAgencyCodeReviewerAgent:      true,
+		EnableAgencySoftwareArchitect:      true,
+		EnableAgencyDevOpsAutomator:        true,
+		EnableAgencySRE:                    true,
+		EnableAgencyAPITester:              true,
+		EnableAgencyPerformanceBenchmarker: true,
 		Settings: &schema.Settings{
 			Model:                 "opus",
 			AlwaysThinkingEnabled: &thinking,
@@ -392,6 +412,75 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 	if opts.EnableReviewer {
 		p.Agents().Register(agentpkg.NewReviewer())
+	}
+
+	// Remote agents — msitarzewski/agency-agents
+	const agencyAgentsRef = "github.com/msitarzewski/agency-agents@021dfbdcab6a208f91750070cbbd040e9daa5264"
+	if opts.EnableAgencyAIEngineer {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-ai-engineer", "AI/ML engineering, model integration, LLM pipelines, and AI system design",
+			agencyAgentsRef, "engineering/engineering-ai-engineer.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencyBackendArchitect {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-backend-architect", "Backend system design, API architecture, and scalability planning",
+			agencyAgentsRef, "engineering/engineering-backend-architect.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencySecurityEngineer {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-security-engineer", "Security analysis, threat modeling, and vulnerability assessment",
+			agencyAgentsRef, "engineering/engineering-security-engineer.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencyCodeReviewerAgent {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-code-reviewer", "Structured code review with quality, security, and performance analysis",
+			agencyAgentsRef, "engineering/engineering-code-reviewer.md",
+			agentpkg.WithModel("sonnet"),
+			agentpkg.WithTools("Read, Grep, Glob"),
+		))
+	}
+	if opts.EnableAgencySoftwareArchitect {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-software-architect", "System architecture, design patterns, and technical decision-making",
+			agencyAgentsRef, "engineering/engineering-software-architect.md",
+			agentpkg.WithModel("opus"),
+		))
+	}
+	if opts.EnableAgencyDevOpsAutomator {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-devops-automator", "CI/CD pipelines, infrastructure automation, and deployment workflows",
+			agencyAgentsRef, "engineering/engineering-devops-automator.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencySRE {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-sre", "Site reliability engineering, observability, and incident response",
+			agencyAgentsRef, "engineering/engineering-sre.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencyAPITester {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-api-tester", "API testing, contract validation, and endpoint coverage analysis",
+			agencyAgentsRef, "testing/testing-api-tester.md",
+			agentpkg.WithModel("sonnet"),
+			agentpkg.WithTools("Read, Grep, Glob, Bash(*), WebFetch"),
+		))
+	}
+	if opts.EnableAgencyPerformanceBenchmarker {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-performance-benchmarker", "Performance profiling, load testing, and optimization recommendations",
+			agencyAgentsRef, "testing/testing-performance-benchmarker.md",
+			agentpkg.WithModel("sonnet"),
+			agentpkg.WithTools("Read, Grep, Glob, Bash(*)"),
+		))
 	}
 
 	return p
