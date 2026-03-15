@@ -157,7 +157,7 @@ func AllDefaults() DefaultOptions {
 		EnableAgencyAPITester:              true,
 		EnableAgencyPerformanceBenchmarker: true,
 		Settings: &schema.Settings{
-			Model:                 "opus",
+			Model:                 "opus[1m]",
 			AlwaysThinkingEnabled: &thinking,
 			EffortLevel:           "high",
 			AutoUpdatesChannel:    "latest",
