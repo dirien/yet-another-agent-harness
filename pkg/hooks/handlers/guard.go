@@ -50,7 +50,7 @@ func (c *CommandGuard) Events() []schema.HookEvent {
 	return []schema.HookEvent{schema.HookPreToolUse}
 }
 
-var bashMatch = regexp.MustCompile(`^Bash$`)
+var bashMatch = regexp.MustCompile(`(?i)^Bash$`)
 
 func (c *CommandGuard) Match() *regexp.Regexp {
 	return bashMatch

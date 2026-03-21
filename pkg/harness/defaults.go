@@ -187,7 +187,7 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		chain := hooks.NewChain(
 			"secret-remediation",
 			[]schema.HookEvent{schema.HookPostToolUse},
-			regexp.MustCompile(`^(Edit|Write|MultiEdit)$`),
+			regexp.MustCompile(`(?i)^(Edit|Write|MultiEdit)$`),
 			hooks.HandlerLink(handlers.NewSecretScanner()),
 			hooks.OnBlock(func(_ context.Context, _ *hooks.Input, prev *hooks.Result) (*hooks.Result, error) {
 				prev.Output += "\n\nRemediation: Move the detected secret to an environment variable or a secrets manager."
@@ -415,7 +415,7 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 
 	// Remote agents — msitarzewski/agency-agents
-	const agencyAgentsRef = "github.com/msitarzewski/agency-agents@021dfbdcab6a208f91750070cbbd040e9daa5264"
+	const agencyAgentsRef = "github.com/msitarzewski/agency-agents@6254154899f510eb4a4de10561fecfc1f32ff17f"
 	if opts.EnableAgencyAIEngineer {
 		p.Agents().Register(agentpkg.NewRemoteAgent(
 			"agency-ai-engineer", "AI/ML engineering, model integration, LLM pipelines, and AI system design",

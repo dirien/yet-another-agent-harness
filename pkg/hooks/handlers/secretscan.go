@@ -40,7 +40,7 @@ func NewSecretScanner() *SecretScanner {
 	_ = v.addPattern(`(?i)github_pat_[0-9a-zA-Z_]{82}`, "GitHub fine-grained PAT")
 	_ = v.addPattern(`sk-[0-9a-zA-Z]{20}T3BlbkFJ[0-9a-zA-Z]{20}`, "OpenAI API key")
 	_ = v.addPattern(`sk-ant-[0-9a-zA-Z-]{90,}`, "Anthropic API key")
-	_ = v.addPattern(`(?i)(password|passwd|secret)\s*[=:]\s*["'][^"']{8,}["']`, "hardcoded password/secret")
+	_ = v.addPattern(`(?i)(password|passwd|secret)\s*[:=]{1,2}\s*["'][^"']{8,}["']`, "hardcoded password/secret")
 	_ = v.addPattern(`(?i)bearer\s+[a-zA-Z0-9\-._~+/]+=*`, "bearer token")
 	_ = v.addPattern(`-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----`, "private key")
 	_ = v.addPattern(`(?i)(slack|xoxb|xoxp|xapp|xoxa)-[0-9a-zA-Z-]{10,}`, "Slack token")
@@ -69,7 +69,7 @@ func (v *SecretScanner) Events() []schema.HookEvent {
 	return []schema.HookEvent{schema.HookPostToolUse}
 }
 
-var editWriteMatch = regexp.MustCompile(`^(Edit|Write|MultiEdit)$`)
+var editWriteMatch = regexp.MustCompile(`(?i)^(Edit|Write|MultiEdit)$`)
 
 func (v *SecretScanner) Match() *regexp.Regexp {
 	return editWriteMatch

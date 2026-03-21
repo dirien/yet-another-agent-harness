@@ -13,7 +13,7 @@ cd your-repo
 yaah generate
 ```
 
-That's it. yaah uses its built-in `AllDefaults()` to generate the full `.claude/` directory with every handler, skill, LSP server, and MCP provider enabled.
+That's it. yaah uses its built-in `AllDefaults()` to generate config for all supported agents (Claude Code, OpenCode, Codex CLI, Copilot CLI) with every handler, skill, LSP server, and MCP provider enabled. Use `--agent` to target a specific agent.
 
 ### Go library (full control)
 
@@ -103,9 +103,13 @@ Run it with `go run ./cmd/your-setup/` whenever you change your config.
 ## CLI reference
 
 ```
-yaah generate              # Generate .claude/ and .mcp.json with built-in defaults
+yaah generate              # Generate config for all agents with built-in defaults
+yaah generate -a claude    # Generate for Claude Code only
+yaah generate -a opencode  # Generate for OpenCode only
+yaah generate -a codex     # Generate for Codex CLI only
+yaah generate -a copilot   # Generate for GitHub Copilot CLI only
 yaah generate -o ./out     # Output to a different directory
-yaah hook <event>          # Runtime hook dispatcher (called by Claude Code)
+yaah hook <event>          # Runtime hook dispatcher (called by coding agents)
 yaah serve                 # Start the yaah MCP server over stdio
 yaah info                  # Show all registered components
 yaah doctor                # Health check: validates binaries and config
@@ -152,29 +156,54 @@ pkg/agents/            Agent interface + Registry + AgentWithAdvanced + Executor
 pkg/commands/          Command interface + Registry + CommandWithAdvanced
 pkg/plugins/           Plugin interface + Registry
 pkg/harness/           Harness (top-level wiring) + defaults + session integration
-pkg/generator/         settings.json + .mcp.json generation
+pkg/generator/         Multi-agent config generation (Claude, OpenCode, Codex, Copilot)
 cmd/yaah/              CLI entry point (generate, hook, serve, session, doctor, info, version)
 internal/cli/          CLI utilities
 ```
 
 ## What gets generated
 
+### Claude Code
+
 ```
-.mcp.json                      # Project-level MCP server discovery (auto-detected by Claude Code)
+.mcp.json                      # Project-level MCP server discovery
 .claude/
 ├── settings.json              # Settings, hooks, MCP servers, enabledPlugins (LSP)
 ├── sessions/                  # Session state (created at runtime by hooks)
-│   └── <session-id>.json
-├── skills/
-│   ├── commit/SKILL.md        # Skill definitions
-│   ├── pr/SKILL.md
-│   └── review/SKILL.md
-├── agents/
-│   ├── executor.md            # Agent definitions with YAML frontmatter
-│   ├── librarian.md
-│   └── reviewer.md
-└── commands/
-    └── deploy.md              # Slash command definitions
+├── skills/                    # SKILL.md files with YAML frontmatter
+├── agents/                    # Agent markdown (executor.md, librarian.md, ...)
+└── commands/                  # Slash command definitions
 ```
 
-MCP servers go inline in `settings.json` under the `mcpServers` key and also into `.mcp.json` at the project root for auto-discovery. LSP servers are enabled via `enabledPlugins` in `settings.json`, referencing official Claude Code marketplace plugins (e.g. `gopls-lsp@claude-plugins-official`).
+### OpenCode
+
+```
+opencode.json                  # Settings + MCP config (key: "mcp", types: "local"/"remote")
+.opencode/
+├── plugins/yaah.js            # Hook bridge plugin (tool.execute.before/after)
+├── skills/                    # SKILL.md files with YAML frontmatter
+└── agents/                    # Agent markdown (tools as disable-map)
+```
+
+### Codex CLI
+
+```
+.codex/
+├── config.toml                # Settings + MCP ([mcp_servers]) + notify + features
+└── hooks.json                 # SessionStart + Stop hooks
+.agents/
+└── skills/                    # SKILL.md files with YAML frontmatter
+```
+
+### GitHub Copilot CLI
+
+```
+.copilot/
+└── mcp-config.json            # MCP config (types: "stdio"/"http", env passthrough)
+.github/
+├── hooks/hooks.json           # Hooks (sessionStart, preToolUse, postToolUse, ...)
+├── skills/                    # SKILL.md files with YAML frontmatter
+└── agents/                    # Agent files (*.agent.md extension)
+```
+
+MCP servers are rendered in each agent's native format. LSP servers (Claude Code only) are enabled via `enabledPlugins` in `settings.json`.

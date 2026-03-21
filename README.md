@@ -2,28 +2,32 @@
 
 **yet another agent harness**
 
-Configure Claude Code once, use it everywhere.
+Configure your coding agent once, use it everywhere.
 
 ## The problem
 
-Claude Code configuration is a mess. Settings live in JSON files, skills are markdown scattered across directories, hooks are shell scripts wired by hand, MCP servers need manual JSON entries, and LSP plugins require marketplace clicks. Multiply that by the number of repos you work in. Good luck keeping any of it consistent.
+Coding agent configuration is a mess. Settings live in JSON files, skills are markdown scattered across directories, hooks are shell scripts wired by hand, MCP servers need manual JSON entries. Multiply that by the number of repos and agents you use. Good luck keeping any of it consistent.
 
 ## What yaah does
 
-yaah generates the entire `.claude/` directory from Go code: settings, hooks, skills, agents, MCP servers, LSP plugins. One command, every repo, same result.
+yaah generates configuration for **four coding agents** from a single Go codebase: Claude Code, OpenCode, Codex CLI, and GitHub Copilot CLI. One command per agent, every repo, same result.
 
 ```bash
-yaah generate
+yaah generate                      # all agents
+yaah generate --agent claude       # Claude Code only
+yaah generate --agent opencode     # OpenCode only
+yaah generate --agent codex        # Codex CLI only
+yaah generate --agent copilot      # GitHub Copilot CLI only
 ```
 
 That single command gives you:
 
 - 5 hooks out of the box: linting (golangci-lint, ruff, prettier, tsc), a command guard that blocks `rm -rf /` and friends, a secret scanner for leaked keys, a comment checker that catches `TODO: implement` placeholders, and a session logger
 - Middleware chains for composing handlers (e.g. secret scan + auto-remediation advice)
-- MCP servers for Context7 and Pulumi, plus a built-in yaah MCP server exposing tools like secret scanning, linting, and command checking directly to Claude Code
-- `.mcp.json` for project-level MCP server discovery (auto-detected by Claude Code)
+- MCP servers for Context7 and Pulumi, plus a built-in yaah MCP server exposing tools like secret scanning, linting, and command checking directly to the agent
+- Multi-agent config generation with per-agent adaptations (MCP format, hook delivery, agent tools, skill frontmatter)
 - LSP support for Go, Python, TypeScript, and C# via the official marketplace
-- Session tracking that logs every tool call, blocked command, and file modification across Claude Code sessions
+- Session tracking that logs every tool call, blocked command, and file modification across sessions
 - 3 built-in skills (commit, PR, review) plus 26 remote skills covering Pulumi IaC, Go, Python, TypeScript, Kubernetes, DevOps, SRE, and more
 - 12 agents: 3 built-in (executor, librarian, reviewer) plus 9 remote agents from [agency-agents](https://github.com/msitarzewski/agency-agents) covering AI engineering, backend architecture, security, code review, DevOps, SRE, and testing
 
@@ -113,7 +117,7 @@ Compose handlers into sequential pipelines with conditional logic:
 ```go
 chain := hooks.NewChain("secret-remediation",
     []schema.HookEvent{schema.HookPostToolUse},
-    regexp.MustCompile(`^(Edit|Write)$`),
+    regexp.MustCompile(`(?i)^(Edit|Write)$`),
     hooks.HandlerLink(handlers.NewSecretScanner()),
     hooks.OnBlock(func(ctx context.Context, input *hooks.Input, prev *hooks.Result) (*hooks.Result, error) {
         prev.Output += "\n\nRemediation: Move the secret to an env var or secrets manager."
@@ -127,16 +131,25 @@ Available combinators: `HandlerLink`, `OnBlock`, `OnError`, `Transform`.
 
 ## How it works
 
-yaah has a simple mental model: interfaces and registries. Each component type (hooks, MCP, LSP, skills, agents, commands) has an interface you implement and a registry you add it to. The `Harness` wires them all together and spits out the right files.
+yaah has a simple mental model: interfaces and registries. Each component type (hooks, MCP, LSP, skills, agents, commands) has an interface you implement and a registry you add it to. The `Harness` wires them all together and the per-agent generators produce the right files.
 
-```
-.claude/
-├── settings.json       # hooks, MCP servers, enabledPlugins, all settings
-├── skills/             # SKILL.md files (built-in + remote)
-├── agents/             # agent markdown with YAML frontmatter
-└── commands/           # slash command definitions
-.mcp.json               # project-level MCP server discovery
-```
+### Multi-agent output
+
+Each agent gets files in its native format:
+
+| Agent        | Settings                | MCP                        | Hooks                       | Skills              | Agents                      |
+| ------------ | ----------------------- | -------------------------- | --------------------------- | ------------------- | --------------------------- |
+| **Claude**   | `.claude/settings.json` | `.mcp.json`                | embedded in settings        | `.claude/skills/`   | `.claude/agents/*.md`       |
+| **OpenCode** | `opencode.json`         | embedded (`"mcp"` key)     | `.opencode/plugins/yaah.js` | `.opencode/skills/` | `.opencode/agents/*.md`     |
+| **Codex**    | `.codex/config.toml`    | embedded (`[mcp_servers]`) | `.codex/hooks.json`         | `.agents/skills/`   | not supported               |
+| **Copilot**  | none                    | `.copilot/mcp-config.json` | `.github/hooks/hooks.json`  | `.github/skills/`   | `.github/agents/*.agent.md` |
+
+Key adaptations per agent:
+
+- **OpenCode**: MCP uses `"mcp"` key with `"local"`/`"remote"` types and `"command"` as array. Agent tools rendered as a disable-map. Hooks delivered via JS plugin (`execFileSync`).
+- **Copilot**: MCP uses `"stdio"`/`"http"` transport types. Env vars passed through. Agent files use `.agent.md` extension.
+- **Codex**: MCP embedded in TOML. Hooks limited to `SessionStart`/`Stop` — linting and security checks available via yaah MCP tools.
+- **Claude**: Native format, all features supported.
 
 Write your own hook? Implement `hooks.Handler`. Custom MCP server? Implement `mcp.Provider`. Same pattern everywhere.
 

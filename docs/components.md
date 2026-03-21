@@ -60,11 +60,11 @@ h.Hooks().Register(scanner)
 
 ### CommentChecker
 
-Flags placeholder comments like `TODO: implement`, `// ...`, and `// your code here`. Also catches non-English comments in edited files.
+Flags placeholder comments like `TODO: implement`, `FIXME`, `HACK`, `// ...`, and `// your code here`. Also catches non-English comments in edited files. Blocks the edit so the agent must fix the issue.
 
 ```go
 checker := handlers.NewCommentChecker()
-checker.AddPattern(`(?i)//\s*HACK\s*$`)
+checker.AddPattern(`(?i)//\s*HACK`)
 h.Hooks().Register(checker)
 ```
 
@@ -85,7 +85,7 @@ import "github.com/dirien/yet-another-agent-harness/pkg/hooks"
 
 chain := hooks.NewChain("secret-remediation",
     []schema.HookEvent{schema.HookPostToolUse},
-    regexp.MustCompile(`^(Edit|Write|MultiEdit)$`),
+    regexp.MustCompile(`(?i)^(Edit|Write|MultiEdit)$`),
     hooks.HandlerLink(handlers.NewSecretScanner()),
     hooks.OnBlock(func(ctx context.Context, input *hooks.Input, prev *hooks.Result) (*hooks.Result, error) {
         prev.Output += "\n\nRemediation: Move the secret to an env var or secrets manager."

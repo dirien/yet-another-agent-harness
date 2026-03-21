@@ -309,15 +309,53 @@ func (p *Harness) GenerateConfig() *schema.HarnessConfig {
 	return cfg
 }
 
-// WriteAll writes all generated files (skills, agents, commands, LSP) to baseDir.
+// TargetWriter provides the directory layout for writing skills, agents, and commands.
+// This is satisfied by the AgentGenerator implementations in the generator package.
+type TargetWriter interface {
+	SkillsDir() string
+	AgentsDir() string
+	AgentFileExt() string
+	CommandsDir() string
+}
+
+// AgentToolsFormatter is an optional interface that TargetWriter implementations
+// can satisfy to customize how the "tools" frontmatter is rendered in agent files.
+// By default, tools are written as a comma-separated string (Claude Code format).
+type AgentToolsFormatter interface {
+	// FormatAgentTools converts a comma-separated tool allowlist (e.g. "Read, Grep, Glob")
+	// into the target-specific frontmatter representation.
+	FormatAgentTools(tools string) string
+}
+
+// WriteAll writes all generated files (skills, agents, commands, LSP) to baseDir
+// using the default Claude Code layout.
 func (p *Harness) WriteAll(baseDir string) error {
+	return p.WriteAllForTarget(baseDir, &defaultClaudeTarget{})
+}
+
+// defaultClaudeTarget provides the Claude Code directory layout for backward compatibility.
+type defaultClaudeTarget struct{}
+
+func (t *defaultClaudeTarget) SkillsDir() string    { return ".claude/skills" }
+func (t *defaultClaudeTarget) AgentsDir() string    { return ".claude/agents" }
+func (t *defaultClaudeTarget) AgentFileExt() string { return ".md" }
+func (t *defaultClaudeTarget) CommandsDir() string  { return ".claude/commands" }
+
+// WriteAllForTarget writes skills, agents, and commands using the directory layout
+// provided by the given TargetWriter.
+func (p *Harness) WriteAllForTarget(baseDir string, tw TargetWriter) error {
+	skillsDir := tw.SkillsDir()
+	agentsDir := tw.AgentsDir()
+	agentExt := tw.AgentFileExt()
+	commandsDir := tw.CommandsDir()
+
 	// Skills.
 	for _, d := range p.skills.Skills() {
 		content := d.Content()
 		if content == "" {
 			continue
 		}
-		dir := filepath.Join(baseDir, ".claude", "skills", d.Name())
+		dir := filepath.Join(baseDir, skillsDir, d.Name())
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return fmt.Errorf("create skill dir %s: %w", d.Name(), err)
 		}
@@ -352,22 +390,24 @@ func (p *Harness) WriteAll(baseDir string) error {
 		_, _ = fmt.Fprintln(os.Stderr)
 	}
 
-	// Agents.
-	for _, a := range p.agents.Agents() {
-		dir := filepath.Join(baseDir, ".claude", "agents")
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return fmt.Errorf("create agents dir: %w", err)
+	// Agents (skip if target doesn't support file-based agents).
+	if agentsDir != "" {
+		for _, a := range p.agents.Agents() {
+			dir := filepath.Join(baseDir, agentsDir)
+			if err := os.MkdirAll(dir, 0o755); err != nil {
+				return fmt.Errorf("create agents dir: %w", err)
+			}
+			content := buildAgentMarkdown(a, tw)
+			path := filepath.Join(dir, a.Name()+agentExt)
+			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+				return fmt.Errorf("write agent %s: %w", a.Name(), err)
+			}
+			_, _ = fmt.Fprintf(os.Stderr, "  agent    %-18s model=%s", a.Name(), a.Model())
+			if src, ok := a.(agents.AgentWithSource); ok && src.Uses() != "" {
+				_, _ = fmt.Fprintf(os.Stderr, " (remote: %s)", src.Uses())
+			}
+			_, _ = fmt.Fprintln(os.Stderr)
 		}
-		content := buildAgentMarkdown(a)
-		path := filepath.Join(dir, a.Name()+".md")
-		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-			return fmt.Errorf("write agent %s: %w", a.Name(), err)
-		}
-		_, _ = fmt.Fprintf(os.Stderr, "  agent    %-18s model=%s", a.Name(), a.Model())
-		if src, ok := a.(agents.AgentWithSource); ok && src.Uses() != "" {
-			_, _ = fmt.Fprintf(os.Stderr, " (remote: %s)", src.Uses())
-		}
-		_, _ = fmt.Fprintln(os.Stderr)
 	}
 
 	// LSP: enable marketplace plugins via enabledPlugins in settings.json.
@@ -378,18 +418,20 @@ func (p *Harness) WriteAll(baseDir string) error {
 		_, _ = fmt.Fprint(os.Stderr, lsp.FormatCheckResults(results))
 	}
 
-	// Commands.
-	for _, c := range p.commands.Commands() {
-		dir := filepath.Join(baseDir, ".claude", "commands")
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return fmt.Errorf("create commands dir: %w", err)
+	// Commands (skip if target doesn't support commands).
+	if commandsDir != "" {
+		for _, c := range p.commands.Commands() {
+			dir := filepath.Join(baseDir, commandsDir)
+			if err := os.MkdirAll(dir, 0o755); err != nil {
+				return fmt.Errorf("create commands dir: %w", err)
+			}
+			content := buildCommandMarkdown(c)
+			path := filepath.Join(dir, c.Name()+".md")
+			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+				return fmt.Errorf("write command %s: %w", c.Name(), err)
+			}
+			_, _ = fmt.Fprintf(os.Stderr, "  command  %-18s\n", c.Name())
 		}
-		content := buildCommandMarkdown(c)
-		path := filepath.Join(dir, c.Name()+".md")
-		if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
-			return fmt.Errorf("write command %s: %w", c.Name(), err)
-		}
-		_, _ = fmt.Fprintf(os.Stderr, "  command  %-18s\n", c.Name())
 	}
 
 	return nil
@@ -408,8 +450,11 @@ func buildSkillMarkdown(s skills.Skill) string {
 			fm.Model != "" || fm.Context != "" || fm.AgentType != ""
 	}
 
+	// Always emit frontmatter — some agents (e.g. Codex) require it.
+	b.WriteString("---\n")
+	_, _ = fmt.Fprintf(&b, "name: %s\n", s.Name())
+	_, _ = fmt.Fprintf(&b, "description: \"%s\"\n", s.Description())
 	if hasFrontmatter {
-		b.WriteString("---\n")
 		if fm.ArgumentHint != "" {
 			_, _ = fmt.Fprintf(&b, "argument-hint: %s\n", fm.ArgumentHint)
 		}
@@ -431,14 +476,14 @@ func buildSkillMarkdown(s skills.Skill) string {
 		if fm.AgentType != "" {
 			_, _ = fmt.Fprintf(&b, "agent: %s\n", fm.AgentType)
 		}
-		b.WriteString("---\n\n")
 	}
+	b.WriteString("---\n\n")
 
 	b.WriteString(s.Content())
 	return b.String()
 }
 
-func buildAgentMarkdown(a agents.Agent) string {
+func buildAgentMarkdown(a agents.Agent, tw TargetWriter) string {
 	var b strings.Builder
 	b.WriteString("---\n")
 	_, _ = fmt.Fprintf(&b, "name: %s\n", a.Name())
@@ -447,7 +492,11 @@ func buildAgentMarkdown(a agents.Agent) string {
 		_, _ = fmt.Fprintf(&b, "model: %s\n", a.Model())
 	}
 	if a.Tools() != "" {
-		_, _ = fmt.Fprintf(&b, "tools: %s\n", a.Tools())
+		if f, ok := tw.(AgentToolsFormatter); ok {
+			b.WriteString(f.FormatAgentTools(a.Tools()))
+		} else {
+			_, _ = fmt.Fprintf(&b, "tools: %s\n", a.Tools())
+		}
 	}
 
 	// Advanced fields.

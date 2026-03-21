@@ -21,6 +21,7 @@ import (
 	"github.com/dirien/yet-another-agent-harness/pkg/lsp"
 	"github.com/dirien/yet-another-agent-harness/pkg/mcpserver"
 	"github.com/dirien/yet-another-agent-harness/pkg/schema"
+	toml "github.com/pelletier/go-toml/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -60,10 +61,11 @@ func main() {
 
 func generateCmd() *cobra.Command {
 	var outputDir string
+	var agentFlag string
 
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate .claude/ directory from built-in defaults",
+		Short: "Generate agent configuration from built-in defaults",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			p := newHarness()
 			cfg := p.GenerateConfig()
@@ -71,46 +73,83 @@ func generateCmd() *cobra.Command {
 			if outputDir == "" {
 				outputDir = "."
 			}
-			if err := p.WriteAll(outputDir); err != nil {
-				return err
-			}
 
-			data, err := generator.GenerateClaudeSettings(cfg)
+			targets, err := resolveTargets(agentFlag)
 			if err != nil {
 				return err
 			}
 
-			claudeDir := filepath.Join(outputDir, ".claude")
-			if err := os.MkdirAll(claudeDir, 0o755); err != nil {
-				return fmt.Errorf("create .claude dir: %w", err)
-			}
+			for _, target := range targets {
+				gen := generator.ForTarget(target)
 
-			outPath := filepath.Join(claudeDir, "settings.json")
-			if err := os.WriteFile(outPath, data, 0o644); err != nil {
-				return fmt.Errorf("write settings: %w", err)
-			}
-
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", outPath)
-
-			// Generate .mcp.json for project-level MCP server discovery.
-			mcpData, err := generator.GenerateMCPJSON(cfg)
-			if err != nil {
-				return err
-			}
-			if mcpData != nil {
-				mcpPath := filepath.Join(outputDir, ".mcp.json")
-				if err := os.WriteFile(mcpPath, mcpData, 0o644); err != nil {
-					return fmt.Errorf("write .mcp.json: %w", err)
+				// Write skills, agents, commands.
+				if err := p.WriteAllForTarget(outputDir, gen); err != nil {
+					return err
 				}
-				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", mcpPath)
-			}
 
+				// Write settings file.
+				if path := gen.SettingsPath(); path != "" {
+					data, err := gen.GenerateSettings(cfg)
+					if err != nil {
+						return err
+					}
+					fullPath := filepath.Join(outputDir, path)
+					if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+						return fmt.Errorf("create dir for %s: %w", path, err)
+					}
+					if err := os.WriteFile(fullPath, data, 0o644); err != nil {
+						return fmt.Errorf("write %s: %w", path, err)
+					}
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", fullPath)
+				}
+
+				// Write MCP file (if separate from settings).
+				if mcpData, err := gen.GenerateMCP(cfg); err != nil {
+					return err
+				} else if mcpData != nil {
+					mcpPath := filepath.Join(outputDir, gen.MCPPath())
+					if err := os.MkdirAll(filepath.Dir(mcpPath), 0o755); err != nil {
+						return fmt.Errorf("create dir for %s: %w", gen.MCPPath(), err)
+					}
+					if err := os.WriteFile(mcpPath, mcpData, 0o644); err != nil {
+						return fmt.Errorf("write %s: %w", gen.MCPPath(), err)
+					}
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", mcpPath)
+				}
+
+				// Write hooks file (if separate from settings).
+				if hooksData, err := gen.GenerateHooks(cfg); err != nil {
+					return err
+				} else if hooksData != nil {
+					hooksPath := filepath.Join(outputDir, gen.HooksPath())
+					if err := os.MkdirAll(filepath.Dir(hooksPath), 0o755); err != nil {
+						return fmt.Errorf("create dir for %s: %w", gen.HooksPath(), err)
+					}
+					if err := os.WriteFile(hooksPath, hooksData, 0o644); err != nil {
+						return fmt.Errorf("write %s: %w", gen.HooksPath(), err)
+					}
+					_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Generated %s\n", hooksPath)
+				}
+			}
 			return nil
 		},
 	}
 
 	cmd.Flags().StringVarP(&outputDir, "output", "o", "", "Output base directory (default: current directory)")
+	cmd.Flags().StringVarP(&agentFlag, "agent", "a", "", "Target agent: claude, opencode, codex, copilot (default: all)")
 	return cmd
+}
+
+// resolveTargets parses the --agent flag into a list of target agents.
+func resolveTargets(flag string) ([]schema.TargetAgent, error) {
+	if flag == "" {
+		return schema.AllTargets(), nil
+	}
+	target, err := schema.ValidateTarget(flag)
+	if err != nil {
+		return nil, err
+	}
+	return []schema.TargetAgent{target}, nil
 }
 
 // hookCmd is the runtime dispatcher: `yaah hook <event>` reads stdin and
@@ -207,19 +246,37 @@ func doctorCmd() *cobra.Command {
 			}
 			_, _ = fmt.Fprintln(out)
 
-			// 3. .claude/settings.json validation
+			// 3. Agent config validation
 			_, _ = fmt.Fprintln(out, "Config:")
-			settingsPath := filepath.Join(".claude", "settings.json")
-			if data, err := os.ReadFile(settingsPath); err == nil {
-				if json.Valid(data) {
-					_, _ = fmt.Fprintf(out, "  ✓ %-25s valid JSON\n", settingsPath)
+			type configCheck struct {
+				path   string
+				format string // "json" or "toml"
+			}
+			checks := []configCheck{
+				{filepath.Join(".claude", "settings.json"), "json"},
+				{"opencode.json", "json"},
+				{filepath.Join(".codex", "config.toml"), "toml"},
+				{filepath.Join(".copilot", "mcp-config.json"), "json"},
+				{filepath.Join(".github", "hooks", "hooks.json"), "json"},
+			}
+			for _, c := range checks {
+				if data, err := os.ReadFile(c.path); err == nil {
+					valid := false
+					switch c.format {
+					case "json":
+						valid = json.Valid(data)
+					case "toml":
+						valid = isValidTOML(data)
+					}
+					if valid {
+						_, _ = fmt.Fprintf(out, "  ✓ %-25s valid %s\n", c.path, strings.ToUpper(c.format))
+					} else {
+						_, _ = fmt.Fprintf(out, "  ✗ %-25s invalid %s\n", c.path, strings.ToUpper(c.format))
+						issues++
+					}
 				} else {
-					_, _ = fmt.Fprintf(out, "  ✗ %-25s invalid JSON\n", settingsPath)
-					issues++
+					_, _ = fmt.Fprintf(out, "  - %-25s not found\n", c.path)
 				}
-			} else {
-				_, _ = fmt.Fprintf(out, "  ✗ %-25s not found (run 'yaah generate')\n", settingsPath)
-				issues++
 			}
 			_, _ = fmt.Fprintln(out)
 
@@ -476,4 +533,10 @@ func sessionCleanCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// isValidTOML checks whether data is valid TOML.
+func isValidTOML(data []byte) bool {
+	var v any
+	return toml.Unmarshal(data, &v) == nil
 }

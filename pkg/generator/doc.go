@@ -1,3 +1,3 @@
-// Package generator converts HarnessConfig into output files:
-// .claude/settings.json and .claude/lsp.json.
+// Package generator converts HarnessConfig into output files for
+// multiple coding agents: Claude Code, OpenCode, Codex CLI, and Copilot CLI.
 package generator

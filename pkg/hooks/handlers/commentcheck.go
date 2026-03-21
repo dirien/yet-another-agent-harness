@@ -29,10 +29,10 @@ type CommentChecker struct {
 func NewCommentChecker() *CommentChecker {
 	return &CommentChecker{
 		patterns: []*regexp.Regexp{
-			regexp.MustCompile(`(?i)//\s*TODO:?\s*(implement|add|fix|write|handle)\s*(this|here|later)?\.?\s*$`),
-			regexp.MustCompile(`(?i)#\s*TODO:?\s*(implement|add|fix|write|handle)\s*(this|here|later)?\.?\s*$`),
-			regexp.MustCompile(`(?i)(//|#)\s*FIXME\s*$`),
-			regexp.MustCompile(`(?i)(//|#)\s*HACK\s*$`),
+			regexp.MustCompile(`(?i)//\s*TODO:?\s*(implement|add|fix|write|handle)`),
+			regexp.MustCompile(`(?i)#\s*TODO:?\s*(implement|add|fix|write|handle)`),
+			regexp.MustCompile(`(?i)(//|#)\s*FIXME`),
+			regexp.MustCompile(`(?i)(//|#)\s*HACK`),
 			regexp.MustCompile(`(?i)(//|#)\s*\.\.\.`),
 			regexp.MustCompile(`(?i)(//|#)\s*placeholder`),
 			regexp.MustCompile(`(?i)(//|#)\s*your code here`),
@@ -103,6 +103,7 @@ func (c *CommentChecker) Execute(_ context.Context, input *hooks.Input) (*hooks.
 	if len(findings) > 0 {
 		return &hooks.Result{
 			Error: fmt.Sprintf("comment-checker found %d issue(s):\n%s", len(findings), strings.Join(findings, "\n")),
+			Block: true,
 		}, nil
 	}
 	return nil, nil
