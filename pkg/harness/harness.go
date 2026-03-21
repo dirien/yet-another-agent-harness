@@ -450,36 +450,43 @@ func buildSkillMarkdown(s skills.Skill) string {
 			fm.Model != "" || fm.Context != "" || fm.AgentType != ""
 	}
 
-	// Always emit frontmatter — some agents (e.g. Codex) require it.
-	b.WriteString("---\n")
-	_, _ = fmt.Fprintf(&b, "name: %s\n", s.Name())
-	_, _ = fmt.Fprintf(&b, "description: \"%s\"\n", s.Description())
-	if hasFrontmatter {
-		if fm.ArgumentHint != "" {
-			_, _ = fmt.Fprintf(&b, "argument-hint: %s\n", fm.ArgumentHint)
-		}
-		if fm.DisableModelInvocation {
-			b.WriteString("disable-model-invocation: true\n")
-		}
-		if fm.UserInvocable != nil && !*fm.UserInvocable {
-			b.WriteString("user-invocable: false\n")
-		}
-		if fm.AllowedTools != "" {
-			_, _ = fmt.Fprintf(&b, "allowed-tools: %s\n", fm.AllowedTools)
-		}
-		if fm.Model != "" {
-			_, _ = fmt.Fprintf(&b, "model: %s\n", fm.Model)
-		}
-		if fm.Context != "" {
-			_, _ = fmt.Fprintf(&b, "context: %s\n", fm.Context)
-		}
-		if fm.AgentType != "" {
-			_, _ = fmt.Fprintf(&b, "agent: %s\n", fm.AgentType)
-		}
-	}
-	b.WriteString("---\n\n")
+	content := s.Content()
 
-	b.WriteString(s.Content())
+	// Skip adding frontmatter if the content already has its own.
+	contentHasFrontmatter := strings.HasPrefix(strings.TrimSpace(content), "---")
+
+	if !contentHasFrontmatter {
+		// Emit frontmatter — some agents (e.g. Codex) require it.
+		b.WriteString("---\n")
+		_, _ = fmt.Fprintf(&b, "name: %s\n", s.Name())
+		_, _ = fmt.Fprintf(&b, "description: \"%s\"\n", s.Description())
+		if hasFrontmatter {
+			if fm.ArgumentHint != "" {
+				_, _ = fmt.Fprintf(&b, "argument-hint: %s\n", fm.ArgumentHint)
+			}
+			if fm.DisableModelInvocation {
+				b.WriteString("disable-model-invocation: true\n")
+			}
+			if fm.UserInvocable != nil && !*fm.UserInvocable {
+				b.WriteString("user-invocable: false\n")
+			}
+			if fm.AllowedTools != "" {
+				_, _ = fmt.Fprintf(&b, "allowed-tools: %s\n", fm.AllowedTools)
+			}
+			if fm.Model != "" {
+				_, _ = fmt.Fprintf(&b, "model: %s\n", fm.Model)
+			}
+			if fm.Context != "" {
+				_, _ = fmt.Fprintf(&b, "context: %s\n", fm.Context)
+			}
+			if fm.AgentType != "" {
+				_, _ = fmt.Fprintf(&b, "agent: %s\n", fm.AgentType)
+			}
+		}
+		b.WriteString("---\n\n")
+	}
+
+	b.WriteString(content)
 	return b.String()
 }
 

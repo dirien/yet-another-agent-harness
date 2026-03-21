@@ -67,6 +67,9 @@ type DefaultOptions struct {
 	EnableSpringBootEngineer   bool
 	EnableCodeReviewer         bool
 
+	// Remote skills — netresearch/agent-rules-skill
+	EnableAgentRules bool
+
 	// LSP servers (marketplace-backed)
 	EnableGopls      bool
 	EnablePyright    bool
@@ -140,6 +143,7 @@ func AllDefaults() DefaultOptions {
 		EnableArchitectureDesigner:         true,
 		EnableSpringBootEngineer:           true,
 		EnableCodeReviewer:                 true,
+		EnableAgentRules:                   true,
 		EnableGopls:                        true,
 		EnablePyright:                      true,
 		EnableTypeScript:                   true,
@@ -386,6 +390,14 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"code-reviewer", "Code review for bugs, security, performance, and maintainability",
 			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/code-reviewer/SKILL.md",
+		))
+	}
+
+	// Remote skills — netresearch/agent-rules-skill
+	if opts.EnableAgentRules {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"agent-rules", "Generate and maintain AGENTS.md files following the agents.md convention",
+			"github.com/netresearch/agent-rules-skill@96cde6c491d854c89ad419b1ba543fa6545748aa", "skills/agent-rules/SKILL.md",
 		))
 	}
 
