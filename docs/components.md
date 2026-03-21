@@ -260,7 +260,7 @@ The ref can be a tag, branch, or commit SHA. Skills are cached in `~/.yaah/cache
 
 ### Default remote skills
 
-yaah ships 26 remote skills from three repos:
+yaah ships 27 remote skills from four repos:
 
 **pulumi/agent-skills** -- Pulumi IaC authoring and migration:
 
@@ -302,6 +302,12 @@ yaah ships 26 remote skills from three repos:
 | `architecture-designer` | System architecture, ADRs, scalability                    |
 | `spring-boot-engineer`  | Spring Boot 3.x, Security 6, JPA, WebFlux                 |
 | `code-reviewer`         | Code review for bugs, security, performance               |
+
+**netresearch/agent-rules-skill** -- AGENTS.md generation:
+
+| Skill         | Description                                                          |
+| ------------- | -------------------------------------------------------------------- |
+| `agent-rules` | Generate and maintain AGENTS.md files following agents.md convention |
 
 ### Skill frontmatter
 
