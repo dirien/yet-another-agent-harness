@@ -115,6 +115,7 @@ func AllDefaults() DefaultOptions {
 			handlers.Ruff(),
 			handlers.Prettier(),
 			handlers.TypeScript(),
+			handlers.RustFmt(),
 		},
 		EnableContext7:                     true,
 		EnablePulumiMCP:                    true,
