@@ -1,0 +1,323 @@
+#!/usr/bin/env bash
+# Detect directories that should have scoped AGENTS.md files
+set -euo pipefail
+
+PROJECT_DIR="${1:-.}"
+cd "$PROJECT_DIR"
+
+MIN_FILES=5  # Minimum files to warrant scoped AGENTS.md
+
+# Get project info
+PROJECT_INFO=$(bash "$(dirname "$0")/detect-project.sh" "$PROJECT_DIR")
+LANGUAGE=$(echo "$PROJECT_INFO" | jq -r '.language')
+
+scopes=()
+
+# Function to count source files in a directory
+count_source_files() {
+    local dir="$1"
+    local pattern="$2"
+    find "$dir" -maxdepth 3 -type f -name "$pattern" 2>/dev/null | wc -l
+}
+
+# Function to add scope (uses jq for proper JSON escaping)
+add_scope() {
+    local path="$1"
+    local type="$2"
+    local count="$3"
+
+    scopes+=("$(jq -n --arg p "$path" --arg t "$type" --argjson c "$count" \
+        '{path: $p, type: $t, files: $c}')")
+}
+
+# Language-specific scope detection
+case "$LANGUAGE" in
+    "go")
+        # Check common Go directories
+        [ -d "internal" ] && {
+            count=$(count_source_files "internal" "*.go")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "internal" "backend-go" "$count"
+        }
+
+        [ -d "pkg" ] && {
+            count=$(count_source_files "pkg" "*.go")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "pkg" "backend-go" "$count"
+        }
+
+        [ -d "cmd" ] && {
+            count=$(count_source_files "cmd" "*.go")
+            [ "$count" -ge 3 ] && add_scope "cmd" "cli" "$count"
+        }
+
+        [ -d "examples" ] && {
+            count=$(count_source_files "examples" "*.go")
+            [ "$count" -ge 3 ] && add_scope "examples" "examples" "$count"
+        }
+
+        [ -d "testutil" ] && {
+            count=$(count_source_files "testutil" "*.go")
+            [ "$count" -ge 3 ] && add_scope "testutil" "testing" "$count"
+        }
+
+        [ -d "docs" ] && {
+            count=$(find docs -type f \( -name "*.md" -o -name "*.rst" \) | wc -l)
+            [ "$count" -ge 3 ] && add_scope "docs" "documentation" "$count"
+        }
+        ;;
+
+    "php")
+        # Determine PHP backend type based on framework
+        FRAMEWORK=$(echo "$PROJECT_INFO" | jq -r '.framework')
+        PROJECT_TYPE=$(echo "$PROJECT_INFO" | jq -r '.type')
+
+        # Select appropriate backend template
+        # Differentiate between extension/bundle (standalone package) vs project (full installation)
+        if [ "$PROJECT_TYPE" = "php-typo3-extension" ]; then
+            PHP_BACKEND_TYPE="typo3-extension"
+        elif [ "$PROJECT_TYPE" = "php-typo3" ]; then
+            PHP_BACKEND_TYPE="typo3-project"
+        elif [ "$PROJECT_TYPE" = "php-oro-bundle" ]; then
+            PHP_BACKEND_TYPE="oro-bundle"
+        elif [ "$PROJECT_TYPE" = "php-oro" ]; then
+            PHP_BACKEND_TYPE="oro-project"
+        elif [ "$FRAMEWORK" = "symfony" ] || [ "$PROJECT_TYPE" = "php-symfony" ]; then
+            PHP_BACKEND_TYPE="symfony"
+        else
+            PHP_BACKEND_TYPE="backend-php"
+        fi
+
+        # Check common PHP directories
+        [ -d "Classes" ] && {
+            count=$(count_source_files "Classes" "*.php")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "Classes" "$PHP_BACKEND_TYPE" "$count"
+        }
+
+        [ -d "src" ] && {
+            count=$(count_source_files "src" "*.php")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "src" "$PHP_BACKEND_TYPE" "$count"
+        }
+
+        [ -d "Tests" ] && {
+            count=$(count_source_files "Tests" "*.php")
+            if [ "$count" -ge 3 ]; then
+                # Use TYPO3-specific testing template for TYPO3 extensions
+                if [ "$PROJECT_TYPE" = "php-typo3-extension" ]; then
+                    add_scope "Tests" "typo3-testing" "$count"
+                else
+                    add_scope "Tests" "testing" "$count"
+                fi
+            fi
+        }
+
+        [ -d "tests" ] && {
+            count=$(count_source_files "tests" "*.php")
+            [ "$count" -ge 3 ] && add_scope "tests" "testing" "$count"
+        }
+
+        [ -d "Documentation" ] && {
+            count=$(find Documentation -type f \( -name "*.rst" -o -name "*.md" \) | wc -l)
+            if [ "$count" -ge 3 ]; then
+                # Use TYPO3-specific docs template for TYPO3 extensions
+                if [ "$PROJECT_TYPE" = "php-typo3-extension" ]; then
+                    add_scope "Documentation" "typo3-docs" "$count"
+                else
+                    add_scope "Documentation" "documentation" "$count"
+                fi
+            fi
+        }
+
+        [ -d "Resources" ] && {
+            count=$(find Resources -type f | wc -l)
+            [ "$count" -ge 5 ] && add_scope "Resources" "resources" "$count"
+        }
+
+        # Oro-specific: check for Bundle directories within projects
+        if [ "$PROJECT_TYPE" = "php-oro" ]; then
+            for bundle_dir in src/*/Bundle/*/; do
+                [ -d "$bundle_dir" ] && {
+                    count=$(count_source_files "$bundle_dir" "*.php")
+                    [ "$count" -ge "$MIN_FILES" ] && add_scope "${bundle_dir%/}" "oro-bundle" "$count"
+                }
+            done
+        fi
+        ;;
+
+    "typescript")
+        # Check common TypeScript/JavaScript directories
+        [ -d "src" ] && {
+            count=$(count_source_files "src" "*.ts")
+            ts_count=$count
+            count=$(count_source_files "src" "*.tsx")
+            tsx_count=$count
+
+            if [ "$tsx_count" -ge "$MIN_FILES" ]; then
+                add_scope "src" "frontend-typescript" "$tsx_count"
+            elif [ "$ts_count" -ge "$MIN_FILES" ]; then
+                add_scope "src" "backend-typescript" "$ts_count"
+            fi
+        }
+
+        [ -d "components" ] && {
+            count=$(count_source_files "components" "*.tsx")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "components" "frontend-typescript" "$count"
+        }
+
+        [ -d "pages" ] && {
+            count=$(count_source_files "pages" "*.tsx")
+            [ "$count" -ge 3 ] && add_scope "pages" "frontend-typescript" "$count"
+        }
+
+        [ -d "app" ] && {
+            count=$(count_source_files "app" "*.tsx")
+            [ "$count" -ge 3 ] && add_scope "app" "frontend-typescript" "$count"
+        }
+
+        if [ -d "server" ] || [ -d "backend" ]; then
+            dir=$([ -d "server" ] && echo "server" || echo "backend")
+            count=$(count_source_files "$dir" "*.ts")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "$dir" "backend-typescript" "$count"
+        fi
+
+        if [ -d "__tests__" ] || [ -d "tests" ]; then
+            dir=$([ -d "__tests__" ] && echo "__tests__" || echo "tests")
+            count=$(count_source_files "$dir" "*.test.ts")
+            [ "$count" -ge 3 ] && add_scope "$dir" "testing" "$count"
+        fi
+        ;;
+
+    "python")
+        # Determine Python template: use python-modern if pyproject.toml with ruff/mypy
+        PYTHON_TEMPLATE="backend-python"
+        if [ -f "pyproject.toml" ]; then
+            if grep -q 'ruff' pyproject.toml 2>/dev/null || grep -q 'mypy' pyproject.toml 2>/dev/null; then
+                PYTHON_TEMPLATE="python-modern"
+            fi
+        fi
+
+        # Check common Python directories
+        [ -d "src" ] && {
+            count=$(count_source_files "src" "*.py")
+            [ "$count" -ge "$MIN_FILES" ] && add_scope "src" "$PYTHON_TEMPLATE" "$count"
+        }
+
+        [ -d "tests" ] && {
+            count=$(count_source_files "tests" "*.py")
+            [ "$count" -ge 3 ] && add_scope "tests" "testing" "$count"
+        }
+
+        [ -d "scripts" ] && {
+            count=$(count_source_files "scripts" "*.py")
+            [ "$count" -ge 3 ] && add_scope "scripts" "cli" "$count"
+        }
+
+        [ -d "docs" ] && {
+            count=$(find docs -type f \( -name "*.md" -o -name "*.rst" \) | wc -l)
+            [ "$count" -ge 3 ] && add_scope "docs" "documentation" "$count"
+        }
+        ;;
+esac
+
+# Check for web subdirectories (cross-language)
+# IMPORTANT: Only create frontend-typescript scopes if Node toolchain exists
+# Either: package.json in scope dir, package.json at root, or lockfile at root
+has_node_toolchain() {
+    local scope_dir="$1"
+    [ -f "$scope_dir/package.json" ] || \
+    [ -f "package.json" ] || \
+    [ -f "pnpm-lock.yaml" ] || \
+    [ -f "yarn.lock" ] || \
+    [ -f "bun.lockb" ] || \
+    [ -f "package-lock.json" ]
+}
+
+for web_dir in internal/web web frontend client ui; do
+    if [ -d "$web_dir" ]; then
+        count=$(find "$web_dir" -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" \) 2>/dev/null | wc -l)
+        if [ "$count" -ge "$MIN_FILES" ] && has_node_toolchain "$web_dir"; then
+            add_scope "$web_dir" "frontend-typescript" "$count"
+        fi
+    fi
+done
+
+# Check for Claude Code skills (each skill gets its own scope)
+if [ -d "skills" ]; then
+    for skill_dir in skills/*/; do
+        if [ -f "${skill_dir}SKILL.md" ]; then
+            # Count files in skill (sh, md, yaml)
+            count=$(find "$skill_dir" -type f \( -name "*.sh" -o -name "*.md" -o -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+            add_scope "${skill_dir%/}" "claude-code-skill" "$count"
+        fi
+    done
+fi
+
+# Check for DDEV local development environment (cross-language)
+if [ -d ".ddev" ]; then
+    count=$(find .ddev -type f \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+    [ "$count" -ge 1 ] && add_scope ".ddev" "ddev" "$count"
+fi
+
+# Check for Docker/container directories (cross-language)
+# These get "docker" scope type for container-focused documentation
+for docker_dir in docker deploy .docker infrastructure infra; do
+    if [ -d "$docker_dir" ]; then
+        # Count Docker-related files
+        count=$(find "$docker_dir" -type f \( -name "Dockerfile*" -o -name "*.dockerfile" -o -name "docker-compose*.yml" -o -name "compose*.yml" -o -name "*.yaml" -o -name "*.sh" \) 2>/dev/null | wc -l)
+        [ "$count" -ge 2 ] && add_scope "$docker_dir" "docker" "$count"
+    fi
+done
+
+# Check for CI/CD configurations (cross-language)
+# GitHub Actions
+if [ -d ".github/workflows" ]; then
+    count=$(find .github/workflows -type f -name "*.yml" -o -name "*.yaml" 2>/dev/null | wc -l)
+    [ "$count" -ge 1 ] && add_scope ".github/workflows" "github-actions" "$count"
+fi
+
+# GitLab CI - use .gitlab directory if exists, otherwise skip (root AGENTS.md covers it)
+if [ -f ".gitlab-ci.yml" ]; then
+    if [ -d ".gitlab" ]; then
+        count=$(find .gitlab -type f -name "*.yml" 2>/dev/null | wc -l)
+        [ "$count" -ge 1 ] && add_scope ".gitlab" "gitlab-ci" "$count"
+    fi
+    # Note: If no .gitlab/ directory, the root AGENTS.md will mention gitlab-ci.yml
+fi
+
+# Concourse CI
+concourse_detected=false
+concourse_dir=""
+for concourse_pattern in "ci/pipeline.yml" "ci/pipeline.yaml" "concourse/pipeline.yml"; do
+    if [ -f "$concourse_pattern" ]; then
+        concourse_dir=$(dirname "$concourse_pattern")
+        concourse_detected=true
+        break
+    fi
+done
+# Check for pipeline.yml at root - only create scope if ci/ directory exists
+if [ "$concourse_detected" = false ]; then
+    if [ -f "pipeline.yml" ] || [ -f "pipeline.yaml" ]; then
+        if [ -d "ci" ]; then
+            concourse_dir="ci"
+            concourse_detected=true
+        fi
+        # If no ci/ directory, root AGENTS.md will cover the pipeline file
+    fi
+fi
+# Also check for *-pipeline.yml at root - only create scope if ci/ directory exists
+if [ "$concourse_detected" = false ]; then
+    pipeline_files=$(find . -maxdepth 1 -name "*-pipeline.yml" -o -name "*-pipeline.yaml" 2>/dev/null | wc -l)
+    if [ "$pipeline_files" -gt 0 ] && [ -d "ci" ]; then
+        concourse_dir="ci"
+        concourse_detected=true
+    fi
+fi
+if [ "$concourse_detected" = true ] && [ -n "$concourse_dir" ] && [ -d "$concourse_dir" ]; then
+    count=$(find "$concourse_dir" -type f \( -name "*.yml" -o -name "*.yaml" -o -name "*.sh" \) 2>/dev/null | wc -l)
+    [ "$count" -ge 1 ] && add_scope "$concourse_dir" "concourse" "$count"
+fi
+
+# Output JSON
+if [ ${#scopes[@]} -eq 0 ]; then
+    echo '{"scopes": []}'
+else
+    echo "{\"scopes\": [$(IFS=,; echo "${scopes[*]}")]}"
+fi

@@ -1,0 +1,246 @@
+# Checkpoints for AGENTS.md verification
+# Ensures AGENTS.md exists, has proper structure, and stays accurate
+
+version: 1
+skill_id: agents
+
+mechanical:
+  # === FILE EXISTENCE ===
+  - id: AG-01
+    type: file_exists
+    target: AGENTS.md
+    severity: error
+    desc: "AGENTS.md must exist in repository root"
+
+  # === RECOMMENDED SECTIONS ===
+  # Note: The agents.md spec has NO required fields - these are best practices
+  - id: AG-02
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (.*Overview|Project|About)"
+    severity: warning
+    desc: "AGENTS.md should have an Overview/Project section (recommended but not required)"
+
+  - id: AG-03
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Setup|Getting Started|Prerequisites|Dev Environment|Development Workflow)"
+    severity: warning
+    desc: "AGENTS.md should have Setup/Dev Environment section (recommended but not required)"
+
+  - id: AG-04
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Commands|Available Commands|Useful Commands)"
+    severity: warning
+    desc: "AGENTS.md should have Commands section"
+
+  - id: AG-05
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Architecture|Structure|Project Structure)"
+    severity: warning
+    desc: "AGENTS.md should describe project architecture"
+
+  - id: AG-06
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Development|Development Workflow|Contributing)"
+    severity: warning
+    desc: "AGENTS.md should have Development workflow section"
+
+  - id: AG-07
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Testing|Tests|Running Tests)"
+    severity: warning
+    desc: "AGENTS.md should have Testing section"
+
+  # === FRESHNESS INDICATORS ===
+  - id: AG-08
+    type: regex
+    target: AGENTS.md
+    pattern: "(Last [Uu]pdated|Updated|Modified).*20[0-9]{2}"
+    severity: warning
+    desc: "AGENTS.md should have Last Updated date"
+
+  # === STRUCTURE QUALITY ===
+  - id: AG-09
+    type: regex
+    target: AGENTS.md
+    pattern: "^## "
+    severity: error
+    desc: "AGENTS.md must use proper markdown heading structure"
+
+  - id: AG-10
+    type: regex
+    target: AGENTS.md
+    pattern: "```(bash|shell|sh|yaml|json|php|typescript|javascript)"
+    severity: warning
+    desc: "AGENTS.md should include code blocks with language hints"
+
+  # === COMMAND DOCUMENTATION ===
+  - id: AG-11
+    type: regex
+    target: AGENTS.md
+    pattern: "(composer|npm|make|ddev|docker)"
+    severity: warning
+    desc: "AGENTS.md should document build/run commands"
+
+  # === AGENT-OPTIMIZED SECTIONS ===
+  - id: AG-13
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Commands|Commands \\(verified)"
+    severity: warning
+    desc: "AGENTS.md should have Commands section with verification status"
+
+  - id: AG-14
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ File Map"
+    severity: info
+    desc: "AGENTS.md should have File Map for navigation efficiency"
+
+  - id: AG-15
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Golden Samples|Canonical Patterns)"
+    severity: info
+    desc: "AGENTS.md should have Golden Samples to reduce pattern guessing"
+
+  - id: AG-16
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Utilities|Shared Utilities|Don't Reinvent)"
+    severity: info
+    desc: "AGENTS.md should list utilities to prevent duplicate code"
+
+  - id: AG-17
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Heuristics|Quick Decisions|Decision Rules)"
+    severity: info
+    desc: "AGENTS.md should have Heuristics for autonomous decisions"
+
+  - id: AG-18
+    type: regex
+    target: AGENTS.md
+    pattern: "Last verified.*20[0-9]{2}"
+    severity: info
+    desc: "AGENTS.md should have 'Last verified' timestamp for trust scoring"
+
+  # === OUTPUT QUALITY ===
+  - id: AG-19
+    type: regex_not
+    target: AGENTS.md
+    pattern: "\\{\\{[A-Z][A-Z0-9_]*\\}\\}"
+    severity: error
+    desc: "AGENTS.md must not contain unresolved placeholders like {{PLACEHOLDER}}"
+
+  - id: AG-20
+    type: regex_not
+    target: AGENTS.md
+    pattern: "\\{\\{[A-Z_]+\\}\\}"
+    severity: error
+    desc: "AGENTS.md has unresolved template placeholders - regenerate or fix template"
+
+  # === IMPORTANT CONTEXT ===
+  - id: AG-12
+    type: regex
+    target: AGENTS.md
+    pattern: "^#+ (Critical|Constraints|Critical Constraints|Important|Caveats|Warnings)"
+    severity: info
+    desc: "AGENTS.md should have Critical/Constraints section for important warnings"
+
+  # === POINTER PRINCIPLE ===
+  - id: AG-26
+    type: regex
+    target: AGENTS.md
+    pattern: "(see |refer to |defined in |located at )[`/]"
+    severity: info
+    desc: "AGENTS.md should point to files rather than duplicating content (Pointer Principle)"
+
+  # === LANGUAGE ===
+  - id: AG-27
+    type: regex
+    target: AGENTS.md
+    pattern: "^# "
+    severity: error
+    desc: "AGENTS.md must have a top-level heading in English (default language)"
+
+  # === SCOPED AGENTS.MD ===
+  - id: AG-28
+    type: regex
+    target: AGENTS.md
+    pattern: "\\|.*\\|"
+    severity: info
+    desc: "AGENTS.md should use tables for structured data (Structured over Prose principle)"
+
+llm_reviews:
+  # === ACCURACY VERIFICATION ===
+  - id: AG-25
+    domain: repo-health
+    prompt: |
+      Verify that AGENTS.md accurately describes the actual project:
+      1. Check if mentioned files/directories actually exist
+      2. Verify mentioned commands work (check package.json scripts, composer.json scripts, Makefile targets)
+      3. Confirm the architecture description matches the actual codebase structure
+      4. Check for outdated version numbers or deprecated patterns
+
+      Report specific inaccuracies with file paths and line numbers.
+    severity: error
+    desc: "AGENTS.md content must match actual codebase"
+
+  - id: AG-21
+    domain: repo-health
+    prompt: |
+      Verify the Commands section is accurate:
+      1. Cross-reference with package.json "scripts", composer.json "scripts", or Makefile
+      2. Check that documented test commands exist
+      3. Verify build/install commands are correct
+      4. Look for undocumented important commands
+
+      List any commands that are documented but don't exist, or important commands that aren't documented.
+    severity: warning
+    desc: "Commands section must match actual available commands"
+
+  - id: AG-22
+    domain: repo-health
+    prompt: |
+      Check AGENTS.md for staleness indicators:
+      1. Are version numbers current? (PHP versions, Node versions, etc.)
+      2. Do mentioned dependencies match package.json/composer.json?
+      3. Are CI/CD references up to date with actual workflow files?
+      4. Is the "Last Updated" date recent (within last 3 months)?
+
+      Report any outdated information with specific details.
+    severity: warning
+    desc: "AGENTS.md should be kept current with codebase changes"
+
+  - id: AG-23
+    domain: repo-health
+    prompt: |
+      Evaluate AGENTS.md completeness for AI agent usage:
+      1. Does it explain the project purpose clearly?
+      2. Does it describe key entry points for understanding the code?
+      3. Are there warnings about gotchas or non-obvious behavior?
+      4. Does it explain test conventions and how to run tests?
+      5. Does it mention important environment variables?
+
+      Rate completeness and list missing information that would help an AI agent.
+    severity: info
+    desc: "AGENTS.md should provide comprehensive context for AI agents"
+
+  - id: AG-24
+    domain: repo-health
+    prompt: |
+      Check for drift between AGENTS.md and other documentation:
+      1. Compare with README.md - are they consistent?
+      2. Check against CONTRIBUTING.md if it exists
+      3. Verify consistency with inline code documentation
+      4. Look for contradictions between AGENTS.md and actual configs
+
+      Report any inconsistencies or contradictions found.
+    severity: warning
+    desc: "AGENTS.md must be consistent with other documentation"
