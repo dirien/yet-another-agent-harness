@@ -1,3 +1,8 @@
+---
+name: commit
+description: "Atomic, semantic-boundary git commit workflow"
+---
+
 # /commit — Atomic Commit Workflow
 
 ## When to use

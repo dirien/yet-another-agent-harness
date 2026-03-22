@@ -1,3 +1,8 @@
+---
+name: review
+description: "Review code changes for quality, security, and correctness"
+---
+
 # /review — Code Review
 
 ## When to use

@@ -1,3 +1,8 @@
+---
+name: pr
+description: "Create pull requests with structured description"
+---
+
 # /pr — Pull Request Creation
 
 ## When to use
