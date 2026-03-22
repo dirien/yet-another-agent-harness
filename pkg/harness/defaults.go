@@ -67,6 +67,11 @@ type DefaultOptions struct {
 	EnableSpringBootEngineer   bool
 	EnableCodeReviewer         bool
 
+	// Remote skills — Rust
+	EnableRustBestPractices bool
+	EnableRustAsyncPatterns bool
+	EnableRustEngineer      bool
+
 	// Remote skills — netresearch/agent-rules-skill
 	EnableAgentRules bool
 
@@ -143,6 +148,9 @@ func AllDefaults() DefaultOptions {
 		EnableArchitectureDesigner:         true,
 		EnableSpringBootEngineer:           true,
 		EnableCodeReviewer:                 true,
+		EnableRustBestPractices:            true,
+		EnableRustAsyncPatterns:            true,
+		EnableRustEngineer:                 true,
 		EnableAgentRules:                   true,
 		EnableGopls:                        true,
 		EnablePyright:                      true,
@@ -390,6 +398,26 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"code-reviewer", "Code review for bugs, security, performance, and maintainability",
 			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/code-reviewer/SKILL.md",
+		))
+	}
+
+	// Remote skills — Rust
+	if opts.EnableRustBestPractices {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"rust-best-practices", "Idiomatic Rust code, borrowing, error handling, and performance optimization",
+			"github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc", "skills/rust-best-practices/SKILL.md",
+		))
+	}
+	if opts.EnableRustAsyncPatterns {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"rust-async-patterns", "Rust async programming with Tokio, async traits, and concurrent patterns",
+			"github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11", "plugins/systems-programming/skills/rust-async-patterns/SKILL.md",
+		))
+	}
+	if opts.EnableRustEngineer {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"rust-engineer", "Idiomatic Rust with ownership, lifetimes, traits, tokio, and error handling",
+			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/rust-engineer/SKILL.md",
 		))
 	}
 
