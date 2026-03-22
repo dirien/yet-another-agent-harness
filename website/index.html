@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>yaah — yet another agent harness</title>
+  <meta name="description" content="Configure your coding agent once, use it everywhere. yaah generates config for Claude Code, OpenCode, Codex CLI, and GitHub Copilot CLI from a single Go codebase.">
+  <meta property="og:title" content="yaah — yet another agent harness">
+  <meta property="og:description" content="Configure your coding agent once, use it everywhere. Multi-agent config generation from a single Go codebase.">
+  <meta property="og:image" content="https://dirien.github.io/yet-another-agent-harness/img/yaah-og.svg">
+  <meta property="og:url" content="https://dirien.github.io/yet-another-agent-harness/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0a0a0a">
+  <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ═══ NAV ═══ -->
+  <nav class="nav">
+    <div class="container">
+      <a href="#" class="nav-logo">
+        <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="64" height="64" rx="14" fill="#1a1a1a"/>
+          <text x="13" y="46" font-family="monospace" font-size="40" font-weight="bold" fill="#00d4aa">&gt;_</text>
+        </svg>
+        yaah
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#agents">Agents</a></li>
+        <li><a href="#install">Install</a></li>
+        <li><a href="#cli">CLI</a></li>
+        <li>
+          <a href="https://github.com/dirien/yet-another-agent-harness" class="nav-github" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+        </li>
+      </ul>
+
+      <a href="https://github.com/dirien/yet-another-agent-harness" class="nav-github nav-github-desktop" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+
+      <button class="nav-hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="container">
+      <span class="hero-badge">yet another agent harness</span>
+      <h1>Configure your coding agent <span class="accent">once</span>, use it <span class="accent">everywhere</span></h1>
+      <p class="hero-subtitle">
+        yaah generates configuration for four coding agents from a single Go codebase. One command per agent, every repo, same result.
+      </p>
+
+      <div class="hero-ctas">
+        <a href="#install" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/dirien/yet-another-agent-harness" class="btn btn-secondary" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+
+      <div class="hero-terminal">
+        <div class="terminal-header">
+          <span class="terminal-dot"></span>
+          <span class="terminal-dot"></span>
+          <span class="terminal-dot"></span>
+          <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="prompt">$</span> <span class="cmd">yaah generate</span></div>
+          <div><span class="output">&nbsp;</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/settings.json</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/skills/</span> <span class="output">(30 skills)</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/agents/</span> <span class="output">(12 agents)</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.mcp.json</span> <span class="output">(3 servers)</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">opencode.json</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.codex/config.toml</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.copilot/mcp-config.json</span></div>
+          <div><span class="output">&nbsp;</span></div>
+          <div><span class="success">Done.</span> <span class="output">4 agents configured, 5 hooks, 3 MCP servers, 4 LSP servers.</span></div>
+        </div>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <div class="stat-value">4</div>
+          <div class="stat-label">Agents</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">30</div>
+          <div class="stat-label">Skills</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">5</div>
+          <div class="stat-label">Hooks</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">12</div>
+          <div class="stat-label">Sub-Agents</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PROBLEM ═══ -->
+  <section id="problem">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <p class="section-label">The Problem</p>
+        <h2 class="section-title">Agent config is a mess</h2>
+      </div>
+      <p class="problem-text fade-in">
+        Coding agent configuration is scattered everywhere. Settings live in JSON files, skills are markdown in random directories, hooks are shell scripts wired by hand, MCP servers need manual JSON entries. <strong>Multiply that by the number of repos and agents you use.</strong> Good luck keeping any of it consistent.
+      </p>
+    </div>
+  </section>
+
+  <!-- ═══ FEATURES ═══ -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <p class="section-label">Features</p>
+        <h2 class="section-title">Everything you need, nothing you don't</h2>
+        <p class="section-subtitle">yaah ships with batteries included. Turn off what you don't need.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <h3>Multi-Agent Support</h3>
+          <p>Generate config for Claude Code, OpenCode, Codex CLI, and GitHub Copilot CLI from one codebase. Each gets files in its native format.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Built-in Hooks</h3>
+          <p>Linting (golangci-lint, ruff, prettier, tsc, biome, rustfmt), command guard, secret scanner, comment checker, and session logger out of the box.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          </div>
+          <h3>Middleware Chains</h3>
+          <p>Compose handlers into sequential pipelines. Chain secret scanning with remediation advice, or build custom workflows with OnBlock, OnError, and Transform.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+          </div>
+          <h3>MCP Server</h3>
+          <p>Built-in MCP server exposes yaah tools (secret scanning, linting, command checking) directly to your coding agent via stdio. Auto-discovered via <code>.mcp.json</code>.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+          </div>
+          <h3>Remote Skills</h3>
+          <p>30 remote skills covering Pulumi IaC, Go, Python, TypeScript, Kubernetes, DevOps, SRE, Rust, architecture design, and more. Pin to a git ref like GitHub Actions.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          </div>
+          <h3>Sub-Agents</h3>
+          <p>12 agents: executor, librarian, reviewer built in, plus 9 remote agents for AI engineering, security, code review, DevOps, SRE, and performance benchmarking.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3>LSP Support</h3>
+          <p>Go (gopls), Python (pyright), TypeScript, and C# language servers enabled through the official Claude Code marketplace. <code>yaah doctor</code> checks binaries exist.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3>Session Tracking</h3>
+          <p>Every tool call, blocked command, file modification, and security finding is logged to a per-session JSON file. Full audit trail across all sessions.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+          </div>
+          <h3>Extensible Architecture</h3>
+          <p>Interface + registry pattern throughout. Implement <code>hooks.Handler</code>, <code>mcp.Provider</code>, <code>skills.Skill</code>, or <code>agents.Agent</code> and register it. Same pattern everywhere.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HOW IT WORKS ═══ -->
+  <section id="how-it-works">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <p class="section-label">How It Works</p>
+        <h2 class="section-title">Three steps to consistent config</h2>
+      </div>
+
+      <div class="steps">
+        <div class="step fade-in">
+          <div class="step-number">1</div>
+          <h3>Define</h3>
+          <p>Use the Go library to pick exactly what you need, or just use the built-in defaults.</p>
+          <div class="step-code">
+<span class="kw">opts</span> := harness.DefaultOptions{
+  EnableCommandGuard: <span class="kw">true</span>,
+  EnableSecretScanner: <span class="kw">true</span>,
+  EnableGopls: <span class="kw">true</span>,
+}
+h := harness.NewWithDefaults(opts)
+          </div>
+        </div>
+
+        <div class="step fade-in">
+          <div class="step-number">2</div>
+          <h3>Generate</h3>
+          <p>One command creates config for all four agents. Target a specific agent with <code>--agent</code>.</p>
+          <div class="step-code">
+<span class="kw">$</span> yaah generate
+<span class="kw">$</span> yaah generate --agent claude
+<span class="kw">$</span> yaah generate --agent opencode
+<span class="kw">$</span> yaah generate --agent codex
+<span class="kw">$</span> yaah generate --agent copilot
+          </div>
+        </div>
+
+        <div class="step fade-in">
+          <div class="step-number">3</div>
+          <h3>Use</h3>
+          <p>Each agent gets files in its native format. Start a coding session and everything works.</p>
+          <div class="step-code">
+.claude/settings.json
+opencode.json
+.codex/config.toml
+.copilot/mcp-config.json
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ MULTI-AGENT TABLE ═══ -->
+  <section id="agents">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <p class="section-label">Multi-Agent</p>
+        <h2 class="section-title">One codebase, four agents</h2>
+        <p class="section-subtitle">Each agent gets config in its native format with per-agent adaptations.</p>
+      </div>
+
+      <div class="table-wrapper fade-in">
+        <table class="agent-table">
+          <thead>
+            <tr>
+              <th>Agent</th>
+              <th>Settings</th>
+              <th>MCP</th>
+              <th>Hooks</th>
+              <th>Skills</th>
+              <th>Agents</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Claude Code</td>
+              <td><code>.claude/settings.json</code></td>
+              <td><code>.mcp.json</code></td>
+              <td>embedded in settings</td>
+              <td><code>.claude/skills/</code></td>
+              <td><code>.claude/agents/</code></td>
+            </tr>
+            <tr>
+              <td>OpenCode</td>
+              <td><code>opencode.json</code></td>
+              <td>embedded (<code>"mcp"</code> key)</td>
+              <td><code>.opencode/plugins/yaah.js</code></td>
+              <td><code>.opencode/skills/</code></td>
+              <td><code>.opencode/agents/</code></td>
+            </tr>
+            <tr>
+              <td>Codex CLI</td>
+              <td><code>.codex/config.toml</code></td>
+              <td>embedded (<code>[mcp_servers]</code>)</td>
+              <td><code>.codex/hooks.json</code></td>
+              <td><code>.agents/skills/</code></td>
+              <td>not supported</td>
+            </tr>
+            <tr>
+              <td>Copilot CLI</td>
+              <td>none</td>
+              <td><code>.copilot/mcp-config.json</code></td>
+              <td><code>.github/hooks/hooks.json</code></td>
+              <td><code>.github/skills/</code></td>
+              <td><code>.github/agents/</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ INSTALL ═══ -->
+  <section id="install">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <p class="section-label">Install</p>
+        <h2 class="section-title">Get up and running in seconds</h2>
+      </div>
+
+      <div class="install-grid">
+        <div class="install-card fade-in">
+          <h3>Homebrew</h3>
+          <p class="install-desc">macOS and Linux</p>
+          <div class="code-block">
+            <code>brew install dirien/tap/yaah</code>
+            <button class="copy-btn" data-copy="brew install dirien/tap/yaah" aria-label="Copy to clipboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div class="install-card fade-in">
+          <h3>Go Install</h3>
+          <p class="install-desc">Requires Go 1.21+</p>
+          <div class="code-block">
+            <code>go install github.com/dirien/yet-another-agent-harness/cmd/yaah@latest</code>
+            <button class="copy-btn" data-copy="go install github.com/dirien/yet-another-agent-harness/cmd/yaah@latest" aria-label="Copy to clipboard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+
+        <div class="install-card fade-in">
+          <h3>Binary Releases</h3>
+          <p class="install-desc">Signed with cosign, includes SBOMs</p>
+          <div class="code-block">
+            <a href="https://github.com/dirien/yet-another-agent-harness/releases" target="_blank" rel="noopener" style="color: var(--accent)">Download from GitHub Releases &rarr;</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CLI REFERENCE ═══ -->
+  <section id="cli">
+    <div class="container">
+      <div class="section-header fade-in">
+        <p class="section-label">CLI Reference</p>
+        <h2 class="section-title">Commands</h2>
+      </div>
+
+      <div class="cli-list fade-in">
+        <div class="cli-row">
+          <span class="cli-cmd">yaah generate</span>
+          <span class="cli-desc">Generate config for all agents with built-in defaults</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah generate -a claude</span>
+          <span class="cli-desc">Generate for Claude Code only</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah generate -a opencode</span>
+          <span class="cli-desc">Generate for OpenCode only</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah generate -a codex</span>
+          <span class="cli-desc">Generate for Codex CLI only</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah generate -a copilot</span>
+          <span class="cli-desc">Generate for GitHub Copilot CLI only</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah generate -o ./out</span>
+          <span class="cli-desc">Output to a different directory</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah hook &lt;event&gt;</span>
+          <span class="cli-desc">Runtime hook dispatcher (called by coding agents)</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah serve</span>
+          <span class="cli-desc">Start the yaah MCP server over stdio</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah info</span>
+          <span class="cli-desc">Show all registered components</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah doctor</span>
+          <span class="cli-desc">Health check: validates binaries and config</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah session list</span>
+          <span class="cli-desc">List recent Claude Code sessions</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah session show &lt;id&gt;</span>
+          <span class="cli-desc">Show full details for a session</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah session clean</span>
+          <span class="cli-desc">Remove sessions older than 7 days</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah version</span>
+          <span class="cli-desc">Print version, commit, and build date</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-left">
+        Built by <a href="https://github.com/dirien" target="_blank" rel="noopener">dirien</a> &middot; MIT License
+      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/dirien/yet-another-agent-harness" target="_blank" rel="noopener">GitHub</a></li>
+        <li><a href="https://github.com/dirien/yet-another-agent-harness/tree/main/docs" target="_blank" rel="noopener">Docs</a></li>
+        <li><a href="https://github.com/dirien/yet-another-agent-harness/releases" target="_blank" rel="noopener">Releases</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#00d4aa"/>
+  <text x="600" y="260" text-anchor="middle" font-family="monospace" font-size="72" font-weight="bold" fill="#e0e0e0">yaah</text>
+  <text x="600" y="340" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="28" fill="#999999">yet another agent harness</text>
+  <text x="600" y="410" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="22" fill="#00d4aa">Configure your coding agent once, use it everywhere.</text>
+</svg>
