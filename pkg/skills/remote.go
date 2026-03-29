@@ -15,6 +15,7 @@ type RemoteSkill struct {
 	description string
 	uses        string // e.g. "github.com/dirien/my-skills@v1.0.0"
 	subpath     string // path within repo, e.g. "skills/commit/SKILL.md"
+	metadata    *SkillMetadata
 
 	// Resolved content (lazy-loaded).
 	content    string
@@ -22,20 +23,34 @@ type RemoteSkill struct {
 	resolved   bool
 }
 
+// RemoteSkillOption configures optional fields on a RemoteSkill.
+type RemoteSkillOption func(*RemoteSkill)
+
+// WithMetadata attaches catalog metadata to a remote skill.
+func WithMetadata(m SkillMetadata) RemoteSkillOption {
+	return func(r *RemoteSkill) {
+		r.metadata = &m
+	}
+}
+
 // NewRemoteSkill creates a skill that fetches from a remote git repo.
 //
 //	uses:    "github.com/owner/repo@v1.0.0" or "github.com/owner/repo@sha"
 //	subpath: path within repo to SKILL.md (empty = "SKILL.md")
-func NewRemoteSkill(name, description, uses, subpath string) *RemoteSkill {
+func NewRemoteSkill(name, description, uses, subpath string, opts ...RemoteSkillOption) *RemoteSkill {
 	if subpath == "" {
 		subpath = "SKILL.md"
 	}
-	return &RemoteSkill{
+	r := &RemoteSkill{
 		name:        name,
 		description: description,
 		uses:        uses,
 		subpath:     subpath,
 	}
+	for _, opt := range opts {
+		opt(r)
+	}
+	return r
 }
 
 var _ SkillWithFiles = (*RemoteSkill)(nil)
@@ -53,6 +68,15 @@ func (r *RemoteSkill) Source() schemapkg.SkillSource {
 func (r *RemoteSkill) Content() string {
 	r.resolve()
 	return r.content
+}
+
+// Metadata returns catalog metadata if set via WithMetadata.
+// Implements SkillWithMetadata.
+func (r *RemoteSkill) Metadata() SkillMetadata {
+	if r.metadata != nil {
+		return *r.metadata
+	}
+	return SkillMetadata{}
 }
 
 // ExtraFiles returns additional files discovered alongside SKILL.md

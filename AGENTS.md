@@ -32,6 +32,7 @@
 <!-- AGENTS-GENERATED:START filemap -->
 ```
 cmd/yaah/           -> CLI entry point (cobra root command)
+pkg/catalog/        -> Skill catalog, bundles, discovery, and validation
 pkg/harness/        -> Top-level orchestrator wiring all registries
 pkg/hooks/          -> Hook registry + handler interface
 pkg/hooks/handlers/ -> Built-in handlers (linter, command-guard, secret-scanner, comment-checker, session-logger)
@@ -68,6 +69,7 @@ website/            -> Static marketing site (auto-deployed to GitHub Pages)
 | Generator | `pkg/generator/claude.go` | Implement `Generator` interface, emit agent-native config |
 | CLI command | `internal/cli/generate.go` | Cobra command wired in `internal/cli/root.go` |
 | Skill definition | `pkg/skills/builtins/commit.go` | Skill struct with Name, Description, Source fields |
+| Catalog entry | `pkg/catalog/entries.go` | CatalogEntry struct with ID, Category, Tags, Risk |
 <!-- AGENTS-GENERATED:END golden-samples -->
 
 ## Utilities (check before creating new)
@@ -90,6 +92,8 @@ website/            -> Static marketing site (auto-deployed to GitHub Pages)
 | Adding a new agent target | Create generator in `pkg/generator/`, add to generate command |
 | Adding a CLI command | Create cobra command in `internal/cli/`, wire in `root.go` |
 | Adding a new skill | Add to `pkg/skills/builtins/` or as remote in harness config |
+| Adding a skill to catalog | Add entry in `pkg/catalog/entries.go`, optionally add to a bundle |
+| Searching for skills | Use `yaah skills search <query>` or `yaah skills list --tag <tag>` |
 | Changing website content | Edit `website/index.html` directly — auto-deploys on push to main |
 | Committing | Use Conventional Commits (feat:, fix:, docs:, etc.) |
 | Adding dependency | Ask first — we minimize deps |

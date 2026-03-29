@@ -44,6 +44,22 @@ type SkillWithFiles interface {
 	ExtraFiles() map[string]string
 }
 
+// SkillMetadata holds optional discovery metadata for a skill.
+type SkillMetadata struct {
+	Category string
+	Tags     []string
+	Risk     string
+	Tier     string
+	Aliases  []string
+}
+
+// SkillWithMetadata is an optional interface for skills that provide
+// catalog metadata for discovery and classification.
+type SkillWithMetadata interface {
+	Skill
+	Metadata() SkillMetadata
+}
+
 // Registry holds all registered skills.
 type Registry struct {
 	skills []Skill
@@ -62,4 +78,23 @@ func (r *Registry) Register(s Skill) {
 // Skills returns all registered skills.
 func (r *Registry) Skills() []Skill {
 	return r.skills
+}
+
+// ByName returns the first registered skill matching the given name, or nil.
+func (r *Registry) ByName(name string) Skill {
+	for _, s := range r.skills {
+		if s.Name() == name {
+			return s
+		}
+	}
+	return nil
+}
+
+// Names returns the names of all registered skills.
+func (r *Registry) Names() []string {
+	names := make([]string, len(r.skills))
+	for i, s := range r.skills {
+		names[i] = s.Name()
+	}
+	return names
 }
