@@ -10,6 +10,11 @@ Core Go library for yaah. Every component follows the **Interface → Registry �
 <!-- AGENTS-GENERATED:START filemap -->
 ## Key Files
 ```
+catalog/catalog.go      -> Skill catalog types (CatalogEntry, Bundle, Category, RiskLevel)
+catalog/entries.go      -> Default catalog data with all skills and bundles
+catalog/search.go       -> Catalog search, filter, and resolve functions
+catalog/registry.go     -> External skill registry loader + catalog merging
+catalog/validate.go     -> Skill validation logic
 harness/harness.go      -> Orchestrator: wires all registries, dispatches hook events
 hooks/registry.go       -> Hook registry (event → handler dispatch)
 hooks/handler.go        -> Handler interface contract

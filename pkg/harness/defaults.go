@@ -3,8 +3,10 @@ package harness
 import (
 	"context"
 	"regexp"
+	"slices"
 
 	agentpkg "github.com/dirien/yet-another-agent-harness/pkg/agents"
+	"github.com/dirien/yet-another-agent-harness/pkg/catalog"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks/handlers"
 	lspproviders "github.com/dirien/yet-another-agent-harness/pkg/lsp/providers"
@@ -74,6 +76,11 @@ type DefaultOptions struct {
 
 	// Remote skills — netresearch/agent-rules-skill
 	EnableAgentRules bool
+
+	// Catalog-based skill selection (overrides individual Enable* flags for skills when set).
+	SkillIDs   []string // Register only these skills from the catalog.
+	BundleIDs  []string // Resolve bundles and register their skills.
+	ExcludeIDs []string // Exclude specific skills.
 
 	// LSP servers (marketplace-backed)
 	EnableGopls      bool
@@ -525,4 +532,212 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 
 	return p
+}
+
+// NewFromCatalog creates a Harness using the catalog to resolve skills.
+// Skills are selected by SkillIDs and BundleIDs from the default catalog.
+// ExcludeIDs removes specific skills from the resolved set.
+// Non-skill components (hooks, MCP, LSP, agents) are configured via the same
+// boolean flags as NewWithDefaults.
+func NewFromCatalog(opts DefaultOptions) *Harness {
+	p := New()
+
+	if opts.Settings != nil {
+		p.SetSettings(opts.Settings)
+	}
+
+	// Handlers — same as NewWithDefaults.
+	if len(opts.LintProfiles) > 0 {
+		p.Hooks().Register(handlers.NewLinterWith(opts.LintProfiles...))
+	}
+	if opts.EnableCommandGuard {
+		p.Hooks().Register(handlers.NewCommandGuard())
+	}
+	if opts.EnableCommentChecker {
+		p.Hooks().Register(handlers.NewCommentChecker())
+	}
+	if opts.EnableSecretRemediation {
+		chain := hooks.NewChain(
+			"secret-remediation",
+			[]schema.HookEvent{schema.HookPostToolUse},
+			regexp.MustCompile(`(?i)^(Edit|Write|MultiEdit)$`),
+			hooks.HandlerLink(handlers.NewSecretScanner()),
+			hooks.OnBlock(func(_ context.Context, _ *hooks.Input, prev *hooks.Result) (*hooks.Result, error) {
+				prev.Output += "\n\nRemediation: Move the detected secret to an environment variable or a secrets manager."
+				return prev, nil
+			}),
+		)
+		p.Hooks().Register(chain)
+	} else if opts.EnableSecretScanner {
+		p.Hooks().Register(handlers.NewSecretScanner())
+	}
+	if opts.EnableSessionLogger {
+		p.Hooks().Register(handlers.NewSessionLogger(""))
+	}
+
+	// Providers — same as NewWithDefaults.
+	if opts.EnableContext7 {
+		p.MCP().Register(mcpproviders.NewContext7())
+	}
+	if opts.EnablePulumiMCP {
+		p.MCP().Register(mcpproviders.NewPulumi())
+	}
+	if opts.EnableYaahMCP {
+		p.MCP().Register(mcpproviders.NewYaah())
+	}
+	if opts.NotionToken != "" {
+		p.MCP().Register(mcpproviders.NewNotion(opts.NotionToken))
+	}
+
+	// Skills — catalog-based.
+	cat := catalog.DefaultCatalog()
+	wanted := resolveSkillIDs(cat, opts.SkillIDs, opts.BundleIDs, opts.ExcludeIDs)
+
+	for _, id := range wanted {
+		entry := cat.ByID(id)
+		if entry == nil {
+			continue
+		}
+		meta := skills.SkillMetadata{
+			Category: string(entry.Category),
+			Tags:     entry.Tags,
+			Risk:     string(entry.Risk),
+			Tier:     string(entry.Tier),
+			Aliases:  entry.Aliases,
+		}
+		if entry.Uses == "builtin" {
+			switch id {
+			case "commit":
+				p.Skills().Register(builtins.NewCommitSkill())
+			case "pr":
+				p.Skills().Register(builtins.NewPRSkill())
+			case "review":
+				p.Skills().Register(builtins.NewReviewSkill())
+			}
+			continue
+		}
+		p.Skills().Register(skills.NewRemoteSkill(
+			entry.ID, entry.Description, entry.Uses, entry.Subpath,
+			skills.WithMetadata(meta),
+		))
+	}
+
+	// LSP servers — same as NewWithDefaults.
+	if opts.EnableGopls {
+		p.LSP().Register(lspproviders.NewGopls())
+	}
+	if opts.EnablePyright {
+		p.LSP().Register(lspproviders.NewPyright())
+	}
+	if opts.EnableTypeScript {
+		p.LSP().Register(lspproviders.NewTypeScript())
+	}
+	if opts.EnableCSharp {
+		p.LSP().Register(lspproviders.NewCSharp())
+	}
+
+	// Agents — same as NewWithDefaults.
+	if opts.EnableExecutor {
+		p.Agents().Register(agentpkg.NewExecutor())
+	}
+	if opts.EnableLibrarian {
+		p.Agents().Register(agentpkg.NewLibrarian())
+	}
+	if opts.EnableReviewer {
+		p.Agents().Register(agentpkg.NewReviewer())
+	}
+
+	const agencyCatalogRef = "github.com/msitarzewski/agency-agents@6254154899f510eb4a4de10561fecfc1f32ff17f"
+	if opts.EnableAgencyAIEngineer {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-ai-engineer", "AI/ML engineering, model integration, LLM pipelines, and AI system design",
+			agencyCatalogRef, "engineering/engineering-ai-engineer.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencyBackendArchitect {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-backend-architect", "Backend system design, API architecture, and scalability planning",
+			agencyCatalogRef, "engineering/engineering-backend-architect.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencySecurityEngineer {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-security-engineer", "Security analysis, threat modeling, and vulnerability assessment",
+			agencyCatalogRef, "engineering/engineering-security-engineer.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencyCodeReviewerAgent {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-code-reviewer", "Structured code review with quality, security, and performance analysis",
+			agencyCatalogRef, "engineering/engineering-code-reviewer.md",
+			agentpkg.WithModel("sonnet"),
+			agentpkg.WithTools("Read, Grep, Glob"),
+		))
+	}
+	if opts.EnableAgencySoftwareArchitect {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-software-architect", "System architecture, design patterns, and technical decision-making",
+			agencyCatalogRef, "engineering/engineering-software-architect.md",
+			agentpkg.WithModel("opus"),
+		))
+	}
+	if opts.EnableAgencyDevOpsAutomator {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-devops-automator", "CI/CD pipelines, infrastructure automation, and deployment workflows",
+			agencyCatalogRef, "engineering/engineering-devops-automator.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencySRE {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-sre", "Site reliability engineering, observability, and incident response",
+			agencyCatalogRef, "engineering/engineering-sre.md",
+			agentpkg.WithModel("sonnet"),
+		))
+	}
+	if opts.EnableAgencyAPITester {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-api-tester", "API testing, contract validation, and endpoint coverage analysis",
+			agencyCatalogRef, "testing/testing-api-tester.md",
+			agentpkg.WithModel("sonnet"),
+			agentpkg.WithTools("Read, Grep, Glob, Bash(*), WebFetch"),
+		))
+	}
+	if opts.EnableAgencyPerformanceBenchmarker {
+		p.Agents().Register(agentpkg.NewRemoteAgent(
+			"agency-performance-benchmarker", "Performance profiling, load testing, and optimization recommendations",
+			agencyCatalogRef, "testing/testing-performance-benchmarker.md",
+			agentpkg.WithModel("sonnet"),
+			agentpkg.WithTools("Read, Grep, Glob, Bash(*)"),
+		))
+	}
+
+	return p
+}
+
+// resolveSkillIDs builds a deduplicated, ordered list of skill IDs from
+// explicit IDs, bundle expansions, and exclusions.
+func resolveSkillIDs(cat *catalog.Catalog, ids, bundles, exclude []string) []string {
+	seen := make(map[string]bool)
+	var result []string
+
+	add := func(id string) {
+		if !seen[id] && !slices.Contains(exclude, id) {
+			seen[id] = true
+			result = append(result, id)
+		}
+	}
+
+	for _, id := range ids {
+		add(id)
+	}
+	for _, bid := range bundles {
+		for _, entry := range cat.ResolveBundle(bid) {
+			add(entry.ID)
+		}
+	}
+	return result
 }

@@ -327,6 +327,94 @@ yaah ships 30 remote skills from six repos:
 | ------------- | -------------------------------------------------------------------- |
 | `agent-rules` | Generate and maintain AGENTS.md files following agents.md convention |
 
+### Skill catalog
+
+yaah maintains a catalog of all available skills in `pkg/catalog/`. The catalog provides discovery, search, and categorization without needing to edit Go code.
+
+Each skill in the catalog has:
+
+| Field       | Type        | Description                                         |
+| ----------- | ----------- | --------------------------------------------------- |
+| `ID`        | string      | Canonical identifier (e.g. `golang-pro`)            |
+| `Category`  | Category    | Primary domain: `language`, `infrastructure`, `security`, `devops`, `workflow`, `migration`, `architecture`, `testing` |
+| `Tags`      | []string    | Searchable keywords (e.g. `go`, `grpc`, `microservices`) |
+| `Risk`      | RiskLevel   | Impact level: `none` (text only), `safe` (read-only), `critical` (mutations) |
+| `Tier`      | QualityTier | Provenance: `official` (yaah core), `verified` (reviewed), `community` (unreviewed) |
+| `Aliases`   | []string    | Alternative names (e.g. `go-pro` → `golang-pro`)   |
+| `Repo`      | string      | Display-friendly source repository                  |
+
+#### Catalog-based harness construction
+
+Instead of toggling individual boolean flags, use `NewFromCatalog` with skill IDs and bundles:
+
+```go
+opts := harness.DefaultOptions{
+    BundleIDs:  []string{"go-dev", "security"},
+    SkillIDs:   []string{"agent-rules"},
+    ExcludeIDs: []string{"the-fool"},
+    // ... handlers, MCP, LSP, agents configured as usual
+}
+h := harness.NewFromCatalog(opts)
+```
+
+#### Bundles
+
+Bundles group skills by role or use case:
+
+| Bundle             | Skills | Description                          |
+| ------------------ | ------ | ------------------------------------ |
+| `go-dev`           | 3      | Full Go development stack            |
+| `pulumi-core`      | 5      | Essential Pulumi IaC skills          |
+| `pulumi-migration` | 4      | Cloud migration toolkit              |
+| `pulumi-languages` | 5      | Pulumi language-specific IaC         |
+| `security`         | 3      | Security-focused review and analysis |
+| `full-stack`       | 5      | Full-stack web development languages |
+| `devops`           | 3      | Infrastructure and operations        |
+| `rust`             | 3      | Rust ecosystem skills                |
+| `architecture`     | 3      | System design and critical thinking  |
+
+### Skill metadata
+
+Skills can implement `SkillWithMetadata` to carry catalog metadata:
+
+```go
+type SkillWithMetadata interface {
+    Skill
+    Metadata() SkillMetadata
+}
+```
+
+This metadata is propagated to `schema.Skill` during config generation and used by the CLI for discovery (`yaah skills list`, `yaah skills search`).
+
+### External skill registry
+
+Add custom skills without editing Go code using a `skills-registry.json` file:
+
+```json
+{
+  "skills": [{
+    "id": "my-custom-skill",
+    "name": "my-custom-skill",
+    "description": "What it does",
+    "category": "workflow",
+    "tags": ["custom"],
+    "risk": "safe",
+    "tier": "community",
+    "uses": "github.com/myorg/skills@v1.0.0",
+    "subpath": "skills/my-skill/SKILL.md",
+    "repo": "myorg/skills"
+  }],
+  "bundles": [{
+    "id": "my-team",
+    "name": "My Team",
+    "description": "Team-specific skills",
+    "skillIds": ["my-custom-skill", "golang-pro"]
+  }]
+}
+```
+
+Pass it via CLI: `yaah skills list --registry ./skills-registry.json`
+
 ### Skill frontmatter
 
 Skills can implement `SkillWithFrontmatter` to inject YAML frontmatter into the generated `SKILL.md`:

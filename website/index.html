@@ -174,8 +174,8 @@
           <div class="feature-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
           </div>
-          <h3>Remote Skills</h3>
-          <p>30 remote skills covering Pulumi IaC, Go, Python, TypeScript, Kubernetes, DevOps, SRE, Rust, architecture design, and more. Pin to a git ref like GitHub Actions.</p>
+          <h3>Skill Catalog</h3>
+          <p>33 skills organized by category, tags, risk level, and bundles. Search, filter, and discover skills via <code>yaah skills</code> CLI. Extend with external registries.</p>
         </div>
 
         <div class="feature-card fade-in">
@@ -416,6 +416,26 @@ opencode.json
         <div class="cli-row">
           <span class="cli-cmd">yaah doctor</span>
           <span class="cli-desc">Health check: validates binaries and config</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah skills list</span>
+          <span class="cli-desc">List all available skills from the catalog</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah skills search &lt;query&gt;</span>
+          <span class="cli-desc">Search skills by name, description, tags, or aliases</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah skills info &lt;name&gt;</span>
+          <span class="cli-desc">Show detailed information about a skill</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah skills bundles</span>
+          <span class="cli-desc">List all skill bundles with descriptions</span>
+        </div>
+        <div class="cli-row">
+          <span class="cli-cmd">yaah skills validate</span>
+          <span class="cli-desc">Validate that skill definitions can be fetched</span>
         </div>
         <div class="cli-row">
           <span class="cli-cmd">yaah session list</span>

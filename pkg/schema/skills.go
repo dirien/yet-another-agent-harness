@@ -30,6 +30,10 @@ type Skill struct {
 	Context                string      `json:"context,omitempty"                jsonschema:"description=Set to fork for subagent execution"`
 	AgentType              string      `json:"agent,omitempty"                  jsonschema:"description=Subagent type when context=fork (Explore/Plan/etc)"`
 	SkillHooks             HooksConfig `json:"hooks,omitempty"                  jsonschema:"description=Lifecycle hooks scoped to this skill"`
+	Category               string      `json:"category,omitempty"              jsonschema:"description=Skill category for discovery (language/infrastructure/security/etc)"`
+	Tags                   []string    `json:"tags,omitempty"                   jsonschema:"description=Tags for search and filtering"`
+	Risk                   string      `json:"risk,omitempty"                   jsonschema:"description=Risk classification: none/safe/critical"`
+	Tier                   string      `json:"tier,omitempty"                   jsonschema:"description=Quality tier: official/verified/community"`
 }
 
 // SkillsConfig holds all skill definitions.

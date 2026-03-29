@@ -103,20 +103,30 @@ Run it with `go run ./cmd/your-setup/` whenever you change your config.
 ## CLI reference
 
 ```
-yaah generate              # Generate config for all agents with built-in defaults
-yaah generate -a claude    # Generate for Claude Code only
-yaah generate -a opencode  # Generate for OpenCode only
-yaah generate -a codex     # Generate for Codex CLI only
-yaah generate -a copilot   # Generate for GitHub Copilot CLI only
-yaah generate -o ./out     # Output to a different directory
-yaah hook <event>          # Runtime hook dispatcher (called by coding agents)
-yaah serve                 # Start the yaah MCP server over stdio
-yaah info                  # Show all registered components
-yaah doctor                # Health check: validates binaries and config
-yaah session list          # List recent Claude Code sessions
-yaah session show <id>     # Show full details for a session
-yaah session clean         # Remove sessions older than 7 days
-yaah version               # Print version, commit, and build date
+yaah generate                      # Generate config for all agents with built-in defaults
+yaah generate -a claude            # Generate for Claude Code only
+yaah generate -a opencode          # Generate for OpenCode only
+yaah generate -a codex             # Generate for Codex CLI only
+yaah generate -a copilot           # Generate for GitHub Copilot CLI only
+yaah generate -o ./out             # Output to a different directory
+yaah hook <event>                  # Runtime hook dispatcher (called by coding agents)
+yaah serve                         # Start the yaah MCP server over stdio
+yaah info                          # Show all registered components
+yaah doctor                        # Health check: validates binaries and config
+yaah skills list                   # List all available skills from catalog
+yaah skills list --category <cat>  # Filter by category
+yaah skills list --tag <tag>       # Filter by tag
+yaah skills list --bundle <id>     # Show skills in a bundle
+yaah skills search <query>         # Search skills by name, description, tags, aliases
+yaah skills info <name>            # Show detailed skill information (resolves aliases)
+yaah skills bundles                # List all skill bundles
+yaah skills bundles --detail       # List bundles with member skills
+yaah skills validate               # Validate all skill definitions
+yaah skills validate --name <name> # Validate a single skill
+yaah session list                  # List recent Claude Code sessions
+yaah session show <id>             # Show full details for a session
+yaah session clean                 # Remove sessions older than 7 days
+yaah version                       # Print version, commit, and build date
 ```
 
 ## Architecture
@@ -141,6 +151,7 @@ The `Harness` struct in `pkg/harness/` wires all registries together. Call `Gene
 ## Project structure
 
 ```
+pkg/catalog/           Skill catalog, bundles, search, and validation
 pkg/schema/            Data types, one file per concern
 pkg/hooks/             Handler interface + Registry + Chain + Combinators
 pkg/hooks/handlers/    Linter, CommandGuard, SecretScanner, CommentChecker, SessionLogger

@@ -52,6 +52,7 @@ func main() {
 		doctorCmd(),
 		serveCmd(),
 		sessionCmd(),
+		skillsCmd(),
 	)
 
 	if err := root.Execute(); err != nil {

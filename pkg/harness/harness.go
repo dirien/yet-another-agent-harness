@@ -274,6 +274,13 @@ func (p *Harness) GenerateConfig() *schema.HarnessConfig {
 				skill.Context = fm.Context
 				skill.AgentType = fm.AgentType
 			}
+			if swm, ok := d.(skills.SkillWithMetadata); ok {
+				m := swm.Metadata()
+				skill.Category = m.Category
+				skill.Tags = m.Tags
+				skill.Risk = m.Risk
+				skill.Tier = m.Tier
+			}
 			cfg.Skills.Skills = append(cfg.Skills.Skills, skill)
 		}
 	}
