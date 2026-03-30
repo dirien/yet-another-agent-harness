@@ -260,7 +260,7 @@ The ref can be a tag, branch, or commit SHA. Skills are cached in `~/.yaah/cache
 
 ### Default remote skills
 
-yaah ships 30 remote skills from six repos:
+yaah ships 32 remote skills from six repos:
 
 **pulumi/agent-skills** -- Pulumi IaC authoring and migration:
 
@@ -275,15 +275,17 @@ yaah ships 30 remote skills from six repos:
 | `cloudformation-to-pulumi`   | Convert CloudFormation to Pulumi         |
 | `pulumi-arm-to-pulumi`       | Convert Azure ARM/Bicep to Pulumi        |
 
-**dirien/claude-skills** -- Pulumi language-specific:
+**dirien/claude-skills** -- Pulumi language-specific and Flux CD GitOps:
 
-| Skill               | Description                              |
-| ------------------- | ---------------------------------------- |
-| `pulumi-typescript` | Pulumi TypeScript IaC with ESC and OIDC  |
-| `pulumi-go`         | Pulumi Go IaC with ESC and OIDC          |
-| `pulumi-python`     | Pulumi Python IaC with ESC and OIDC      |
-| `pulumi-neo`        | Pulumi Neo conversational infrastructure |
-| `pulumi-cli`        | Pulumi CLI command reference             |
+| Skill                | Description                                              |
+| -------------------- | -------------------------------------------------------- |
+| `pulumi-typescript`  | Pulumi TypeScript IaC with ESC and OIDC                  |
+| `pulumi-go`          | Pulumi Go IaC with ESC and OIDC                          |
+| `pulumi-python`      | Pulumi Python IaC with ESC and OIDC                      |
+| `pulumi-neo`         | Pulumi Neo conversational infrastructure                 |
+| `pulumi-cli`         | Pulumi CLI command reference                             |
+| `flux-cli`           | GitOps for Kubernetes using Flux CD CLI                  |
+| `flux-operator-cli`  | Flux Operator CLI for managing Flux CD on Kubernetes     |
 
 **jeffallan/claude-skills** -- Development and operations:
 
@@ -369,7 +371,7 @@ Bundles group skills by role or use case:
 | `pulumi-languages` | 5      | Pulumi language-specific IaC         |
 | `security`         | 3      | Security-focused review and analysis |
 | `full-stack`       | 5      | Full-stack web development languages |
-| `devops`           | 3      | Infrastructure and operations        |
+| `devops`           | 5      | Infrastructure and operations        |
 | `rust`             | 3      | Rust ecosystem skills                |
 | `architecture`     | 3      | System design and critical thinking  |
 

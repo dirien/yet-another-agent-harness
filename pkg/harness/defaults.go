@@ -48,11 +48,13 @@ type DefaultOptions struct {
 	EnablePulumiARMMigrate       bool
 
 	// Remote skills — dirien/claude-skills
-	EnablePulumiTypeScript bool
-	EnablePulumiGo         bool
-	EnablePulumiPython     bool
-	EnablePulumiNeo        bool
-	EnablePulumiCLI        bool
+	EnablePulumiTypeScript  bool
+	EnablePulumiGo          bool
+	EnablePulumiPython      bool
+	EnablePulumiNeo         bool
+	EnablePulumiCLI         bool
+	EnableFluxCLI           bool
+	EnableFluxOperatorCLI   bool
 
 	// Remote skills — jeffallan/claude-skills
 	EnableGolangPro            bool
@@ -143,6 +145,8 @@ func AllDefaults() DefaultOptions {
 		EnablePulumiPython:                 true,
 		EnablePulumiNeo:                    true,
 		EnablePulumiCLI:                    true,
+		EnableFluxCLI:                     true,
+		EnableFluxOperatorCLI:             true,
 		EnableGolangPro:                    true,
 		EnableKubernetesSpecialist:         true,
 		EnableDevOpsEngineer:               true,
@@ -301,31 +305,43 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnablePulumiTypeScript {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-typescript", "Pulumi TypeScript IaC with ESC and OIDC",
-			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-typescript/SKILL.md",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-typescript/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiGo {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-go", "Pulumi Go IaC with ESC and OIDC",
-			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-go/SKILL.md",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-go/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiPython {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-python", "Pulumi Python IaC with ESC and OIDC",
-			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-python/SKILL.md",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-python/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiNeo {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-neo", "Pulumi Neo conversational infrastructure management",
-			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-neo/SKILL.md",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-neo/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiCLI {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-cli", "Pulumi CLI command reference for deployments",
-			"github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf", "pulumi-cli/SKILL.md",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-cli/SKILL.md",
+		))
+	}
+	if opts.EnableFluxCLI {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"flux-cli", "GitOps for Kubernetes using Flux CD CLI",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "flux-cli/SKILL.md",
+		))
+	}
+	if opts.EnableFluxOperatorCLI {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"flux-operator-cli", "Flux Operator CLI for managing Flux CD deployments on Kubernetes",
+			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "flux-operator-cli/SKILL.md",
 		))
 	}
 
