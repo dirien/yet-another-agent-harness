@@ -3,7 +3,7 @@ package catalog
 const (
 	// Remote refs pinned to specific commits.
 	pulumiAgentSkillsRef     = "github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4"
-	dirienClaudeSkillsRef    = "github.com/dirien/claude-skills@073664d4f8e83fc1447a9e310dab6c51482f64bf"
+	dirienClaudeSkillsRef    = "github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5"
 	jeffallanClaudeSkillsRef = "github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a"
 	apolloSkillsRef          = "github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc"
 	wshobsonAgentsRef        = "github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11"
@@ -147,6 +147,24 @@ func defaultSkills() []CatalogEntry {
 			Category:    CategoryInfrastructure, Tags: []string{"pulumi", "cli", "deployment"},
 			Risk: RiskSafe, Tier: TierVerified,
 			Uses: dirienClaudeSkillsRef, Subpath: "pulumi-cli/SKILL.md",
+			Repo: "dirien/claude-skills",
+		},
+
+		// dirien/claude-skills — Flux CD GitOps.
+		{
+			ID: "flux-cli", Name: "flux-cli",
+			Description: "GitOps for Kubernetes using Flux CD CLI",
+			Category:    CategoryInfrastructure, Tags: []string{"flux", "gitops", "kubernetes", "cli"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: dirienClaudeSkillsRef, Subpath: "flux-cli/SKILL.md",
+			Repo: "dirien/claude-skills",
+		},
+		{
+			ID: "flux-operator-cli", Name: "flux-operator-cli",
+			Description: "Flux Operator CLI for managing Flux CD deployments on Kubernetes",
+			Category:    CategoryInfrastructure, Tags: []string{"flux", "gitops", "kubernetes", "operator", "cli"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: dirienClaudeSkillsRef, Subpath: "flux-operator-cli/SKILL.md",
 			Repo: "dirien/claude-skills",
 		},
 
@@ -337,7 +355,7 @@ func defaultBundles() []Bundle {
 		{
 			ID: "devops", Name: "DevOps & SRE",
 			Description: "Infrastructure, operations, and reliability skills",
-			SkillIDs:    []string{"devops-engineer", "sre-engineer", "kubernetes-specialist"},
+			SkillIDs:    []string{"devops-engineer", "sre-engineer", "kubernetes-specialist", "flux-cli", "flux-operator-cli"},
 		},
 		{
 			ID: "rust", Name: "Rust Development",
