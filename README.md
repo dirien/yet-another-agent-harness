@@ -28,8 +28,9 @@ That single command gives you:
 - Multi-agent config generation with per-agent adaptations (MCP format, hook delivery, agent tools, skill frontmatter)
 - LSP support for Go, Python, TypeScript, and C# via the official marketplace
 - Session tracking that logs every tool call, blocked command, and file modification across sessions
-- 3 built-in skills (commit, PR, review) plus 29 remote skills covering Pulumi IaC, Flux CD GitOps, Go, Python, TypeScript, Kubernetes, DevOps, SRE, AGENTS.md generation, and more
+- 3 built-in skills (commit, PR, review) plus 32 remote skills covering Pulumi IaC, Flux CD GitOps, Go, Python, TypeScript, Kubernetes, DevOps, SRE, AGENTS.md generation, and more
 - 12 agents: 3 built-in (executor, librarian, reviewer) plus 9 remote agents from [agency-agents](https://github.com/msitarzewski/agency-agents) covering AI engineering, backend architecture, security, code review, DevOps, SRE, and testing
+- Plugin support with marketplace auto-enablement — ships with [OpenAI Codex](https://github.com/openai/codex-plugin-cc) for code review and task delegation
 
 Don't want all of it? Turn off what you don't need:
 

@@ -582,6 +582,20 @@ The `schema.Plugin` struct matches the official Claude Code `plugin.json` spec.
 | `lspServers`   | string      | Path to `.lsp.json` or inline LSP config         |
 | `outputStyles` | string      | Path to output styles directory                  |
 
+### Marketplace plugins
+
+Plugins that implement `MarketplacePlugin` are automatically added to `enabledPlugins` in `settings.json`, similar to how LSP marketplace providers work.
+
+| Plugin | Marketplace Key       | Source                                                                          |
+| ------ | --------------------- | ------------------------------------------------------------------------------- |
+| codex  | `codex@openai-codex`  | [openai/codex-plugin-cc](https://github.com/openai/codex-plugin-cc)            |
+
+The Codex plugin integrates OpenAI Codex as a code review and task delegation agent. It provides commands (`/codex:review`, `/codex:adversarial-review`, `/codex:rescue`, `/codex:setup`, `/codex:status`, `/codex:result`, `/codex:cancel`), a rescue subagent, and lifecycle hooks for session start/end and stop-time review gates.
+
+```go
+h.Plugins().Register(plugins.NewCodex())
+```
+
 ## Session store
 
 The session store provides a persistent audit trail for every Claude Code session. It records hook events, tool calls, blocked commands, file modifications, and security findings to JSON files.

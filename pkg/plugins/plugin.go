@@ -12,6 +12,14 @@ type Plugin interface {
 	Plugin() schema.Plugin
 }
 
+// MarketplacePlugin is an optional interface for plugins available in a
+// Claude Code marketplace. Plugins implementing this return their
+// enabledPlugins key (e.g. "codex@openai-codex").
+type MarketplacePlugin interface {
+	Plugin
+	MarketplaceKey() string
+}
+
 // Registry holds all registered plugins.
 type Registry struct {
 	plugins []Plugin

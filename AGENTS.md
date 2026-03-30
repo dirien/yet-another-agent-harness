@@ -70,6 +70,7 @@ website/            -> Static marketing site (auto-deployed to GitHub Pages)
 | CLI command | `internal/cli/generate.go` | Cobra command wired in `internal/cli/root.go` |
 | Skill definition | `pkg/skills/builtins/commit.go` | Skill struct with Name, Description, Source fields |
 | Catalog entry | `pkg/catalog/entries.go` | CatalogEntry struct with ID, Category, Tags, Risk |
+| Plugin | `pkg/plugins/codex.go` | Implement `plugins.Plugin` + `MarketplacePlugin` interfaces |
 <!-- AGENTS-GENERATED:END golden-samples -->
 
 ## Utilities (check before creating new)
@@ -89,6 +90,7 @@ website/            -> Static marketing site (auto-deployed to GitHub Pages)
 |------|-----|
 | Adding a new hook handler | Create in `pkg/hooks/handlers/`, register in `internal/cli/generate.go` default harness |
 | Adding a new MCP provider | Create in `pkg/mcp/providers/`, register in default harness |
+| Adding a new plugin | Create in `pkg/plugins/`, implement `Plugin` interface, register in default harness |
 | Adding a new agent target | Create generator in `pkg/generator/`, add to generate command |
 | Adding a CLI command | Create cobra command in `internal/cli/`, wire in `root.go` |
 | Adding a new skill | Add to `pkg/skills/builtins/` or as remote in harness config |

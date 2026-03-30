@@ -250,6 +250,21 @@ func (p *Harness) GenerateConfig() *schema.HarnessConfig {
 		}
 	}
 
+	// Plugins: add marketplace plugins to enabledPlugins.
+	if registered := p.plugins.Plugins(); len(registered) > 0 {
+		for _, plug := range registered {
+			if mp, ok := plug.(plugins.MarketplacePlugin); ok {
+				if cfg.Settings == nil {
+					cfg.Settings = &schema.Settings{}
+				}
+				if cfg.Settings.EnabledPlugins == nil {
+					cfg.Settings.EnabledPlugins = schema.EnabledPluginsMap{}
+				}
+				cfg.Settings.EnabledPlugins[mp.MarketplaceKey()] = true
+			}
+		}
+	}
+
 	// Skills.
 	if registeredSkills := p.skills.Skills(); len(registeredSkills) > 0 {
 		cfg.Skills = &schema.SkillsConfig{}
@@ -644,6 +659,18 @@ func (p *Harness) Summary() string {
 		lines = append(lines, "\nCommands:")
 		for _, c := range registeredCommands {
 			lines = append(lines, fmt.Sprintf("  %-20s %s", c.Name(), c.Description()))
+		}
+	}
+
+	if registeredPlugins := p.plugins.Plugins(); len(registeredPlugins) > 0 {
+		lines = append(lines, "\nPlugins:")
+		for _, plug := range registeredPlugins {
+			meta := plug.Plugin()
+			key := ""
+			if mp, ok := plug.(plugins.MarketplacePlugin); ok {
+				key = fmt.Sprintf(" (marketplace: %s)", mp.MarketplaceKey())
+			}
+			lines = append(lines, fmt.Sprintf("  %-20s %s%s", meta.Name, meta.Description, key))
 		}
 	}
 
