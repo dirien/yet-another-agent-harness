@@ -11,6 +11,7 @@ import (
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks/handlers"
 	lspproviders "github.com/dirien/yet-another-agent-harness/pkg/lsp/providers"
 	mcpproviders "github.com/dirien/yet-another-agent-harness/pkg/mcp/providers"
+	"github.com/dirien/yet-another-agent-harness/pkg/plugins"
 	"github.com/dirien/yet-another-agent-harness/pkg/schema"
 	"github.com/dirien/yet-another-agent-harness/pkg/skills"
 	"github.com/dirien/yet-another-agent-harness/pkg/skills/builtins"
@@ -83,6 +84,9 @@ type DefaultOptions struct {
 	SkillIDs   []string // Register only these skills from the catalog.
 	BundleIDs  []string // Resolve bundles and register their skills.
 	ExcludeIDs []string // Exclude specific skills.
+
+	// Plugins (marketplace-backed)
+	EnableCodexPlugin bool
 
 	// LSP servers (marketplace-backed)
 	EnableGopls      bool
@@ -164,6 +168,7 @@ func AllDefaults() DefaultOptions {
 		EnableRustAsyncPatterns:            true,
 		EnableRustEngineer:                 true,
 		EnableAgentRules:                   true,
+		EnableCodexPlugin:                 true,
 		EnableGopls:                        true,
 		EnablePyright:                      true,
 		EnableTypeScript:                   true,
@@ -453,6 +458,11 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		))
 	}
 
+	// Plugins.
+	if opts.EnableCodexPlugin {
+		p.Plugins().Register(plugins.NewCodex())
+	}
+
 	// LSP servers.
 	if opts.EnableGopls {
 		p.LSP().Register(lspproviders.NewGopls())
@@ -636,6 +646,11 @@ func NewFromCatalog(opts DefaultOptions) *Harness {
 			entry.ID, entry.Description, entry.Uses, entry.Subpath,
 			skills.WithMetadata(meta),
 		))
+	}
+
+	// Plugins — same as NewWithDefaults.
+	if opts.EnableCodexPlugin {
+		p.Plugins().Register(plugins.NewCodex())
 	}
 
 	// LSP servers — same as NewWithDefaults.

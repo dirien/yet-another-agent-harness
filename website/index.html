@@ -83,7 +83,7 @@
           <div><span class="prompt">$</span> <span class="cmd">yaah generate</span></div>
           <div><span class="output">&nbsp;</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/settings.json</span></div>
-          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/skills/</span> <span class="output">(32 skills)</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/skills/</span> <span class="output">(35 skills)</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/agents/</span> <span class="output">(12 agents)</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.mcp.json</span> <span class="output">(3 servers)</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">opencode.json</span></div>
@@ -100,7 +100,7 @@
           <div class="stat-label">Agents</div>
         </div>
         <div class="stat">
-          <div class="stat-value">32</div>
+          <div class="stat-value">35</div>
           <div class="stat-label">Skills</div>
         </div>
         <div class="stat">
@@ -200,6 +200,14 @@
           </div>
           <h3>Session Tracking</h3>
           <p>Every tool call, blocked command, file modification, and security finding is logged to a per-session JSON file. Full audit trail across all sessions.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <h3>Plugin Support</h3>
+          <p>Marketplace plugins auto-enabled in <code>settings.json</code>. Ships with OpenAI Codex plugin for code review and task delegation via <code>/codex:review</code> and <code>/codex:rescue</code>.</p>
         </div>
 
         <div class="feature-card fade-in">

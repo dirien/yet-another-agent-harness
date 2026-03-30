@@ -29,7 +29,8 @@ skills/registry.go      -> Skill registry + remote loader
 skills/builtins/*.go    -> Built-in skills: commit, pr, review
 agents/registry.go      -> Agent registry + remote loader
 commands/registry.go    -> CLI command registry
-plugins/registry.go     -> Plugin registry
+plugins/plugin.go       -> Plugin interface, MarketplacePlugin interface, and registry
+plugins/codex.go        -> OpenAI Codex plugin (marketplace: codex@openai-codex)
 generator/claude.go     -> Claude Code config generator
 generator/opencode.go   -> OpenCode config generator
 generator/codex.go      -> Codex CLI config generator
@@ -51,6 +52,7 @@ mcpserver/server.go     -> Built-in MCP server (stdio transport, tool handlers)
 | Config generator | `generator/claude.go` | Implement `Generator`, read from registries, write native format |
 | Built-in skill | `skills/builtins/commit.go` | `Skill` struct with Name, Description, Source |
 | Registry | `hooks/registry.go` | Thread-safe `Register()` + `All()` + typed iteration |
+| Plugin | `plugins/codex.go` | Implement `Plugin` + `MarketplacePlugin`, return `schema.Plugin` |
 <!-- AGENTS-GENERATED:END golden-samples -->
 
 <!-- AGENTS-GENERATED:START setup -->
