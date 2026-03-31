@@ -80,6 +80,22 @@ type DefaultOptions struct {
 	// Remote skills — netresearch/agent-rules-skill
 	EnableAgentRules bool
 
+	// Remote skills — rshade/agent-skills
+	EnableAgentReadyGo    bool
+	EnableCommitlint      bool
+	EnableDecide          bool
+	EnableDepUpgrade      bool
+	EnableDesignPrinciples bool
+	EnableGoNolintAudit   bool
+	EnableLintFix         bool
+	EnableMarkdownlint    bool
+	EnablePullRequestMsg  bool
+	EnableRoadmap         bool
+	EnableScout           bool
+	EnableSecurityAudit   bool
+	EnableTailscaleInstall bool
+	EnableTechDebt        bool
+
 	// Catalog-based skill selection (overrides individual Enable* flags for skills when set).
 	SkillIDs   []string // Register only these skills from the catalog.
 	BundleIDs  []string // Resolve bundles and register their skills.
@@ -168,6 +184,20 @@ func AllDefaults() DefaultOptions {
 		EnableRustAsyncPatterns:            true,
 		EnableRustEngineer:                 true,
 		EnableAgentRules:                   true,
+		EnableAgentReadyGo:                true,
+		EnableCommitlint:                  true,
+		EnableDecide:                      true,
+		EnableDepUpgrade:                  true,
+		EnableDesignPrinciples:            true,
+		EnableGoNolintAudit:               true,
+		EnableLintFix:                     true,
+		EnableMarkdownlint:                true,
+		EnablePullRequestMsg:              true,
+		EnableRoadmap:                     true,
+		EnableScout:                       true,
+		EnableSecurityAudit:               true,
+		EnableTailscaleInstall:            true,
+		EnableTechDebt:                    true,
 		EnableCodexPlugin:                 true,
 		EnableGopls:                        true,
 		EnablePyright:                      true,
@@ -455,6 +485,93 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"agent-rules", "Generate and maintain AGENTS.md files following the agents.md convention",
 			"github.com/netresearch/agent-rules-skill@96cde6c491d854c89ad419b1ba543fa6545748aa", "skills/agent-rules/SKILL.md",
+		))
+	}
+
+	// Remote skills — rshade/agent-skills
+	const rshadeRef = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
+	if opts.EnableAgentReadyGo {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"agent-ready-go", "Prepare Go apps for AI agent interaction with structured logging and CLI design",
+			rshadeRef, "skills/agent-ready-go/SKILL.md",
+		))
+	}
+	if opts.EnableCommitlint {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"commitlint", "Validate commit messages against Conventional Commits specification",
+			rshadeRef, "skills/commitlint/SKILL.md",
+		))
+	}
+	if opts.EnableDecide {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"decide", "Three-agent adversarial debate protocol for strategic decisions",
+			rshadeRef, "skills/decide/SKILL.md",
+		))
+	}
+	if opts.EnableDepUpgrade {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"dep-upgrade", "Safe systematic dependency upgrades with vulnerability scanning and rollback",
+			rshadeRef, "skills/dep-upgrade/SKILL.md",
+		))
+	}
+	if opts.EnableDesignPrinciples {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"design-principles", "Analyze codebases against SOLID, DRY, YAGNI, KISS, and other design principles",
+			rshadeRef, "skills/design-principles/SKILL.md",
+		))
+	}
+	if opts.EnableGoNolintAudit {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"go-nolint-audit", "Audit nolint directives in Go codebases for stale or unjustified suppressions",
+			rshadeRef, "skills/go-nolint-audit/SKILL.md",
+		))
+	}
+	if opts.EnableLintFix {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"lint-fix", "Detect linting tools, run them to zero errors, and fix issues atomically",
+			rshadeRef, "skills/lint-fix/SKILL.md",
+		))
+	}
+	if opts.EnableMarkdownlint {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"markdownlint", "Validate markdown files against formatting standards with auto-fix",
+			rshadeRef, "skills/markdownlint/SKILL.md",
+		))
+	}
+	if opts.EnablePullRequestMsg {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"pull-request-msg", "Generate structured PR descriptions from session context using GitHub CLI",
+			rshadeRef, "skills/pull-request-msg-with-gh/SKILL.md",
+		))
+	}
+	if opts.EnableRoadmap {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"roadmap", "Strategic roadmap management synced with GitHub Issues and labels",
+			rshadeRef, "skills/roadmap/SKILL.md",
+		))
+	}
+	if opts.EnableScout {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"scout", "Identify top improvement opportunities in files you are touching",
+			rshadeRef, "skills/scout/SKILL.md",
+		))
+	}
+	if opts.EnableSecurityAudit {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"security-audit", "Comprehensive vulnerability assessment with OWASP Top 10 and threat modeling",
+			rshadeRef, "skills/security-audit/SKILL.md",
+		))
+	}
+	if opts.EnableTailscaleInstall {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"tailscale-install", "Install and configure Tailscale across platforms including WSL2 and containers",
+			rshadeRef, "skills/tailscale-install/SKILL.md",
+		))
+	}
+	if opts.EnableTechDebt {
+		p.Skills().Register(skills.NewRemoteSkill(
+			"tech-debt", "Systematic technical debt analysis across 9 categories with health scoring",
+			rshadeRef, "skills/tech-debt/SKILL.md",
 		))
 	}
 

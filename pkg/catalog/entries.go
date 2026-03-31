@@ -8,6 +8,7 @@ const (
 	apolloSkillsRef          = "github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc"
 	wshobsonAgentsRef        = "github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11"
 	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@96cde6c491d854c89ad419b1ba543fa6545748aa"
+	rshadeAgentSkillsRef    = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
 )
 
 // DefaultCatalog returns the complete catalog of all built-in and remote skills with bundles.
@@ -317,6 +318,120 @@ func defaultSkills() []CatalogEntry {
 			Uses: netresearchAgentRulesRef, Subpath: "skills/agent-rules/SKILL.md",
 			Repo: "netresearch/agent-rules-skill",
 		},
+
+		// rshade/agent-skills — Code quality, security, and workflow automation.
+		{
+			ID: "agent-ready-go", Name: "agent-ready-go",
+			Description: "Prepare Go apps for AI agent interaction with structured logging and CLI design",
+			Category:    CategoryLanguage, Tags: []string{"go", "agent-ready", "logging", "cli"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/agent-ready-go/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "commitlint", Name: "commitlint",
+			Description: "Validate commit messages against Conventional Commits specification",
+			Category:    CategoryWorkflow, Tags: []string{"git", "commits", "linting", "conventional-commits"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/commitlint/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "decide", Name: "decide",
+			Description: "Three-agent adversarial debate protocol for strategic decisions",
+			Category:    CategoryArchitecture, Tags: []string{"decision-making", "debate", "tradeoffs"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/decide/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "dep-upgrade", Name: "dep-upgrade",
+			Description: "Safe systematic dependency upgrades with vulnerability scanning and rollback",
+			Category:    CategoryWorkflow, Tags: []string{"dependencies", "upgrades", "security", "vulnerability"},
+			Risk: RiskCritical, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/dep-upgrade/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "design-principles", Name: "design-principles",
+			Description: "Analyze codebases against SOLID, DRY, YAGNI, KISS, and other design principles",
+			Category:    CategoryArchitecture, Tags: []string{"design", "solid", "code-quality", "audit"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/design-principles/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "go-nolint-audit", Name: "go-nolint-audit",
+			Description: "Audit nolint directives in Go codebases for stale or unjustified suppressions",
+			Category:    CategoryLanguage, Tags: []string{"go", "linting", "nolint", "audit"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/go-nolint-audit/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "lint-fix", Name: "lint-fix",
+			Description: "Detect linting tools, run them to zero errors, and fix issues atomically",
+			Category:    CategoryWorkflow, Tags: []string{"linting", "fixing", "code-quality"},
+			Risk: RiskCritical, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/lint-fix/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "markdownlint", Name: "markdownlint",
+			Description: "Validate markdown files against formatting standards with auto-fix",
+			Category:    CategoryWorkflow, Tags: []string{"markdown", "linting", "documentation"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/markdownlint/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "pull-request-msg", Name: "pull-request-msg",
+			Description: "Generate structured PR descriptions from session context using GitHub CLI",
+			Category:    CategoryWorkflow, Tags: []string{"github", "pull-request", "automation"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/pull-request-msg-with-gh/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "roadmap", Name: "roadmap",
+			Description: "Strategic roadmap management synced with GitHub Issues and labels",
+			Category:    CategoryWorkflow, Tags: []string{"roadmap", "planning", "github", "issues"},
+			Risk: RiskCritical, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/roadmap/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "scout", Name: "scout",
+			Description: "Identify top improvement opportunities in files you are touching",
+			Category:    CategoryWorkflow, Tags: []string{"code-quality", "improvement", "review"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/scout/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "security-audit", Name: "security-audit",
+			Description: "Comprehensive vulnerability assessment with OWASP Top 10 and threat modeling",
+			Category:    CategorySecurity, Tags: []string{"security", "owasp", "vulnerability", "audit"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/security-audit/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "tailscale-install", Name: "tailscale-install",
+			Description: "Install and configure Tailscale across platforms including WSL2 and containers",
+			Category:    CategoryInfrastructure, Tags: []string{"tailscale", "vpn", "networking", "install"},
+			Risk: RiskCritical, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/tailscale-install/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
+		{
+			ID: "tech-debt", Name: "tech-debt",
+			Description: "Systematic technical debt analysis across 9 categories with health scoring",
+			Category:    CategoryArchitecture, Tags: []string{"tech-debt", "audit", "code-quality", "architecture"},
+			Risk: RiskSafe, Tier: TierVerified,
+			Uses: rshadeAgentSkillsRef, Subpath: "skills/tech-debt/SKILL.md",
+			Repo: "rshade/agent-skills",
+		},
 	}
 }
 
@@ -325,7 +440,7 @@ func defaultBundles() []Bundle {
 		{
 			ID: "go-dev", Name: "Go Development",
 			Description: "Full Go development stack",
-			SkillIDs:    []string{"golang-pro", "pulumi-go", "cli-developer"},
+			SkillIDs:    []string{"golang-pro", "pulumi-go", "cli-developer", "agent-ready-go", "go-nolint-audit"},
 		},
 		{
 			ID: "pulumi-core", Name: "Pulumi Core",
@@ -345,7 +460,7 @@ func defaultBundles() []Bundle {
 		{
 			ID: "security", Name: "Security",
 			Description: "Security-focused review and analysis skills",
-			SkillIDs:    []string{"review", "code-reviewer", "the-fool"},
+			SkillIDs:    []string{"review", "code-reviewer", "the-fool", "security-audit"},
 		},
 		{
 			ID: "full-stack", Name: "Full Stack",
@@ -361,6 +476,11 @@ func defaultBundles() []Bundle {
 			ID: "rust", Name: "Rust Development",
 			Description: "Rust ecosystem skills",
 			SkillIDs:    []string{"rust-best-practices", "rust-async-patterns", "rust-engineer"},
+		},
+		{
+			ID: "code-quality", Name: "Code Quality",
+			Description: "Linting, auditing, and code improvement skills",
+			SkillIDs:    []string{"lint-fix", "commitlint", "markdownlint", "scout", "design-principles", "tech-debt", "dep-upgrade"},
 		},
 		{
 			ID: "architecture", Name: "Architecture",

@@ -260,7 +260,7 @@ The ref can be a tag, branch, or commit SHA. Skills are cached in `~/.yaah/cache
 
 ### Default remote skills
 
-yaah ships 32 remote skills from six repos:
+yaah ships 46 remote skills from seven repos:
 
 **pulumi/agent-skills** -- Pulumi IaC authoring and migration:
 
@@ -329,6 +329,25 @@ yaah ships 32 remote skills from six repos:
 | ------------- | -------------------------------------------------------------------- |
 | `agent-rules` | Generate and maintain AGENTS.md files following agents.md convention |
 
+**rshade/agent-skills** -- Code quality, security, and workflow automation:
+
+| Skill                | Description                                                         |
+| -------------------- | ------------------------------------------------------------------- |
+| `agent-ready-go`     | Prepare Go apps for AI agent interaction                            |
+| `commitlint`         | Validate commit messages against Conventional Commits               |
+| `decide`             | Three-agent adversarial debate for strategic decisions              |
+| `dep-upgrade`        | Safe systematic dependency upgrades with rollback                   |
+| `design-principles`  | Analyze codebases against SOLID, DRY, YAGNI, KISS                  |
+| `go-nolint-audit`    | Audit nolint directives in Go codebases                             |
+| `lint-fix`           | Detect linting tools and fix issues atomically                      |
+| `markdownlint`       | Validate markdown formatting with auto-fix                          |
+| `pull-request-msg`   | Generate structured PR descriptions via GitHub CLI                  |
+| `roadmap`            | Strategic roadmap management synced with GitHub Issues               |
+| `scout`              | Identify top improvement opportunities in touched files             |
+| `security-audit`     | Comprehensive vulnerability assessment with OWASP and STRIDE        |
+| `tailscale-install`  | Install and configure Tailscale across platforms                    |
+| `tech-debt`          | Systematic technical debt analysis with health scoring              |
+
 ### Skill catalog
 
 yaah maintains a catalog of all available skills in `pkg/catalog/`. The catalog provides discovery, search, and categorization without needing to edit Go code.
@@ -365,14 +384,15 @@ Bundles group skills by role or use case:
 
 | Bundle             | Skills | Description                          |
 | ------------------ | ------ | ------------------------------------ |
-| `go-dev`           | 3      | Full Go development stack            |
+| `go-dev`           | 5      | Full Go development stack            |
 | `pulumi-core`      | 5      | Essential Pulumi IaC skills          |
 | `pulumi-migration` | 4      | Cloud migration toolkit              |
 | `pulumi-languages` | 5      | Pulumi language-specific IaC         |
-| `security`         | 3      | Security-focused review and analysis |
+| `security`         | 4      | Security-focused review and analysis |
 | `full-stack`       | 5      | Full-stack web development languages |
 | `devops`           | 5      | Infrastructure and operations        |
 | `rust`             | 3      | Rust ecosystem skills                |
+| `code-quality`     | 7      | Linting, auditing, and improvement   |
 | `architecture`     | 3      | System design and critical thinking  |
 
 ### Skill metadata
