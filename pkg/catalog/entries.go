@@ -7,7 +7,7 @@ const (
 	jeffallanClaudeSkillsRef = "github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a"
 	apolloSkillsRef          = "github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc"
 	wshobsonAgentsRef        = "github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11"
-	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@96cde6c491d854c89ad419b1ba543fa6545748aa"
+	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@9b67bf594a52b1a7d38d8b0ec0a076a31f8d3d7e"
 	rshadeAgentSkillsRef    = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
 )
 

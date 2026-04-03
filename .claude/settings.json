@@ -80,6 +80,7 @@
     }
   },
   "enabledPlugins": {
+    "codex@openai-codex": true,
     "csharp-lsp@claude-plugins-official": true,
     "gopls-lsp@claude-plugins-official": true,
     "pyright-lsp@claude-plugins-official": true,

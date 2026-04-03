@@ -1,0 +1,55 @@
+{
+  "skill_name": "pulumi-python",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create an AWS Step Functions state machine that orchestrates Lambda functions for an order processing pipeline: validate order, charge payment (via Secrets Manager API key), update DynamoDB, and send SNS notification. Schedule it hourly via EventBridge. Use Pulumi Python with uv toolchain and ESC for credentials.",
+      "expected_output": "Complete __main__.py with Step Functions, Lambda, DynamoDB, SNS, EventBridge, Secrets Manager, Pulumi.yaml with uv, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Creates a Step Functions state machine with ASL definition",
+        "Creates Lambda function(s) for the pipeline steps",
+        "Creates a DynamoDB table",
+        "Creates an SNS topic for notifications",
+        "Creates an EventBridge rule with schedule expression for hourly trigger",
+        "Creates or references a Secrets Manager secret",
+        "Proper IAM roles granting Step Functions permission to invoke Lambdas",
+        "Pulumi.yaml specifies toolchain: uv",
+        "Includes ESC YAML with pulumiConfig section"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Deploy Azure Functions with a Cosmos DB change feed trigger, a Service Bus queue for message processing, and Application Insights for monitoring using Pulumi Python. Configure with ESC and OIDC for Azure credentials. Show Pulumi.yaml, __main__.py, and ESC environment.",
+      "expected_output": "Complete __main__.py with Azure Functions, Cosmos DB, Service Bus, App Insights, and ESC YAML with Azure OIDC",
+      "files": [],
+      "expectations": [
+        "Imports pulumi_azure_native",
+        "Creates an Azure Function App with associated storage account and app service plan",
+        "Creates a Cosmos DB account with database and container",
+        "Creates a Service Bus namespace and queue",
+        "Creates an Application Insights resource",
+        "Wires Cosmos DB connection string and Service Bus connection to Function App settings",
+        "Includes ESC YAML with fn::open::azure-login for OIDC",
+        "Exports Function App URL and Cosmos DB endpoint"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up GCP Cloud Functions (2nd gen) triggered by Firestore document changes, with Cloud Tasks for reliable retries, Cloud Scheduler for cron jobs, and BigQuery dataset for analytics using Pulumi Python. Use ESC for GCP OIDC credentials.",
+      "expected_output": "Complete __main__.py with Cloud Functions v2, Firestore, Cloud Tasks, Cloud Scheduler, BigQuery, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Imports pulumi_gcp",
+        "Creates a Cloud Function (2nd gen / Cloud Run based)",
+        "Creates or configures Firestore database",
+        "Creates a Cloud Tasks queue",
+        "Creates a Cloud Scheduler job with schedule",
+        "Creates a BigQuery dataset and table",
+        "Configures proper IAM for Cloud Functions to access Firestore, Cloud Tasks, and BigQuery",
+        "Includes ESC YAML with fn::open::gcp-login for OIDC",
+        "Exports function URL and BigQuery dataset ID"
+      ]
+    }
+  ]
+}

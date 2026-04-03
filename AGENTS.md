@@ -183,6 +183,7 @@ Each registry collects components; generators consume registries to emit agent-n
 | Directory | Focus |
 |-----------|-------|
 | [`pkg/AGENTS.md`](./pkg/AGENTS.md) | Go package conventions, interface contracts, registry pattern |
+| [`.github/workflows/AGENTS.md`](./.github/workflows/AGENTS.md) | GitHub Actions workflows and CI/CD automation |
 <!-- AGENTS-GENERATED:END scope-index -->
 
 > **Agents**: When you read or edit files in a listed directory, you **must** load its AGENTS.md first. It contains directory-specific conventions that override this root file.

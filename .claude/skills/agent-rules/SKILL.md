@@ -5,7 +5,7 @@ license: "(MIT AND CC-BY-SA-4.0). See LICENSE-MIT and LICENSE-CC-BY-SA-4.0"
 compatibility: "Requires bash 4.3+, jq 1.5+, git 2.0+."
 metadata:
   author: Netresearch DTT GmbH
-  version: "3.4.0"
+  version: "3.7.0"
   repository: https://github.com/netresearch/agent-rules-skill
 allowed-tools: Bash(git:*) Bash(jq:*) Bash(grep:*) Bash(find:*) Bash(bash:*) Read Glob Grep
 ---
@@ -40,25 +40,21 @@ Generate and maintain AGENTS.md files following the [agents.md convention](https
 
 See `references/scripts-guide.md` for full options.
 
+## Workflow
+
+1. **Detect**: `detect-project.sh` + `detect-scopes.sh` to identify stacks and subsystems
+2. **Extract**: `extract-commands.sh`, `extract-ci-rules.sh`, etc. to gather facts
+3. **Generate**: `generate-agents.sh` with `--style=thin` (default) or `--verbose`
+4. **Verify**: `verify-content.sh` + `verify-commands.sh` -- MANDATORY before done
+
+Use `--update` to preserve human-curated content outside `<!-- GENERATED -->` markers.
+
 ## Core Principles
 
-- **Structured over Prose** -- tables and maps parse faster than paragraphs
-- **Verified Commands** -- commands that don't work waste tokens debugging
+- **Structured over Prose** -- tables parse faster than paragraphs
+- **Never Fabricate** -- only document what exists; verify every command and path
 - **Pointer Principle** -- point to files, don't duplicate content
-- **Audit Before Generating** -- discover existing docs before running scripts
-
-## Cross-Agent Compatibility
-
-After generating AGENTS.md, **create symlinks** for agents using their own format:
-
-```bash
-scripts/generate-agents.sh /path/to/project --symlinks
-# Or manually: ln -s AGENTS.md CLAUDE.md && ln -s AGENTS.md GEMINI.md
-```
-
-Claude Code loads subdirectory CLAUDE.md on demand -- without symlinks, subdirectory AGENTS.md files are never loaded. Commit symlinks to git (9 bytes each).
-
-See [`references/ai-tool-compatibility.md`](references/ai-tool-compatibility.md) for the full 16-agent compatibility matrix.
+- **Auto Symlinks** -- CLAUDE.md/GEMINI.md symlinks by default (see [`ai-tool-compatibility.md`](references/ai-tool-compatibility.md))
 
 ## References
 
@@ -68,6 +64,7 @@ See [`references/ai-tool-compatibility.md`](references/ai-tool-compatibility.md)
 | [`scripts-guide.md`](references/scripts-guide.md) | Script options, validation checklist |
 | [`ai-tool-compatibility.md`](references/ai-tool-compatibility.md) | 16-agent compatibility matrix |
 | [`output-structure.md`](references/output-structure.md) | Root/scoped sections |
+| [`git-hooks-setup.md`](references/git-hooks-setup.md) | Hook framework detection and setup |
 | [`examples/`](references/examples/) | Complete examples |
 
 ## Templates

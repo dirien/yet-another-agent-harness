@@ -1,0 +1,55 @@
+{
+  "skill_name": "pulumi-go",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Deploy an EKS cluster with a managed node group, an ALB Ingress Controller (aws-load-balancer-controller), and an RDS Aurora PostgreSQL cluster in private subnets using Pulumi Go. Include proper IAM Roles for Service Accounts (IRSA) so pods can access RDS. Use ESC for AWS OIDC credentials.",
+      "expected_output": "Complete main.go with EKS cluster, node group, ALB controller, RDS Aurora, VPC, IRSA, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Creates an EKS cluster resource",
+        "Creates a managed node group attached to the cluster",
+        "Creates an RDS Aurora PostgreSQL cluster with instances",
+        "Creates VPC with public and private subnets or references existing networking",
+        "Configures IRSA (IAM Role for Service Account) with OIDC provider",
+        "Proper Go error handling (if err != nil) throughout",
+        "Exports cluster kubeconfig or endpoint and RDS endpoint",
+        "Includes ESC YAML with fn::open::aws-login OIDC section"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create an AKS cluster with Azure Container Registry, an Azure DNS zone for custom domains, and a managed identity using Pulumi Go. Wire ACR to AKS with proper role assignments so AKS can pull images. Include ESC for Azure OIDC.",
+      "expected_output": "Complete main.go with AKS, ACR, DNS zone, managed identity, role assignments, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Imports pulumi-azure-native SDK",
+        "Creates an AKS managed cluster resource",
+        "Creates an Azure Container Registry",
+        "Creates an Azure DNS zone",
+        "Creates a managed identity (UserAssignedIdentity or SystemAssigned)",
+        "Creates role assignment granting AKS the AcrPull role on ACR",
+        "Proper Go error handling throughout",
+        "Exports AKS kubeconfig and ACR login server",
+        "Includes ESC YAML with fn::open::azure-login"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Deploy a GKE Autopilot cluster with Cloud NAT for outbound internet, a Cloud Armor WAF security policy, and a Cloud SQL MySQL instance with private IP connectivity using Pulumi Go. Use ESC for GCP credentials.",
+      "expected_output": "Complete main.go with GKE Autopilot, Cloud NAT, Cloud Armor, Cloud SQL MySQL, private networking, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Imports pulumi-gcp SDK",
+        "Creates a GKE Autopilot cluster (enableAutopilot: true or equivalent)",
+        "Creates Cloud NAT with a NAT router",
+        "Creates a Cloud Armor security policy with rules",
+        "Creates a Cloud SQL MySQL instance with private IP configuration",
+        "Configures private services networking or VPC peering for Cloud SQL",
+        "Proper Go error handling throughout",
+        "Exports GKE cluster endpoint and Cloud SQL connection name",
+        "Includes ESC YAML with fn::open::gcp-login"
+      ]
+    }
+  ]
+}

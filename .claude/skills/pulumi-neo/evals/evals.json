@@ -1,0 +1,32 @@
+{
+  "skill_name": "pulumi-neo",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I want to use Pulumi Neo to analyze my production AWS stack for security issues. My org is 'acmecorp' and the stack is called 'prod' in project 'aws-infra'. Show me exactly how to create this task and check on the results.",
+      "expected_output": "Commands or code to create a Neo task with stack context, poll for events, and interpret results",
+      "files": [],
+      "expectations": [
+        "Uses the neo_task.py script or direct API call to create a task",
+        "Includes --org acmecorp flag",
+        "Includes --stack-name prod and --stack-project aws-infra for context",
+        "Uses --no-poll flag for non-blocking execution",
+        "Shows how to check task events or status after creation",
+        "Mentions PULUMI_ACCESS_TOKEN requirement"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Can you create a Neo task to review the infrastructure changes in our latest PR? The repo is 'infra-monorepo' in the 'acmecorp' GitHub org. Also explain what happens if Neo needs approval for something.",
+      "expected_output": "Neo task creation with repo context, explanation of approval flow with approval_request detection",
+      "files": [],
+      "expectations": [
+        "Creates a Neo task with --repo-name infra-monorepo and --repo-org acmecorp",
+        "Specifies --repo-forge github for the repository forge",
+        "Explains the approval flow: agentResponse events with tool_calls containing approval_request",
+        "Shows how to send approval using --approve flag or API call",
+        "Shows how to cancel using --cancel flag or API"
+      ]
+    }
+  ]
+}

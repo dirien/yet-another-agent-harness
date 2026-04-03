@@ -1,6 +1,6 @@
 ---
 name: pulumi-cli
-description: Pulumi CLI command reference for infrastructure deployments. Provides commands to create and manage stacks, configure backends, manage secrets, handle stack outputs, and perform state operations. Use when the user asks about "pulumi commands", "deploy with pulumi", "pulumi up", "pulumi preview", "manage pulumi stacks", "pulumi state management", "export/import pulumi state", or needs help with Pulumi CLI operations and workflows.
+description: "Use for hands-on Pulumi CLI work: running deployments, fixing broken stacks, and managing infrastructure state. Handles: recovering from stuck or interrupted `pulumi up` with pending operations, cleaning orphaned resources from state after out-of-band cloud deletions, protecting critical resources from accidental `pulumi destroy`, moving resources between stacks without recreating them, targeting specific resources during deployment, migrating between backends (local file to Pulumi Cloud, S3), stack lifecycle management, state export/import/repair, CI/CD pipeline setup, and importing existing cloud resources. Use this skill — not the language-specific Pulumi skills — whenever the user's question is about operating, troubleshooting, or recovering Pulumi infrastructure rather than writing program code."
 ---
 
 # Pulumi CLI Skill
@@ -66,7 +66,8 @@ pulumi stack import --file backup.json
 # Delete resource from state (keeps cloud resource)
 pulumi state delete 'urn:pulumi:dev::myproject::aws:s3/bucket:Bucket::my-bucket'
 
-# Move resource between stacks
+# Move resource between stacks (preferred over delete+import)
+# This is a single atomic operation that transfers state without touching cloud resources
 pulumi state move --source dev --dest prod 'urn:...'
 
 # Protect critical resources
@@ -104,17 +105,19 @@ pulumi config env add myorg/myproject-dev
 
 ## CI/CD Quick Setup
 
+These three environment variables are essential for non-interactive Pulumi in CI/CD — without `PULUMI_CI=true`, Pulumi may prompt for input and hang your pipeline:
+
 ```bash
-# Required environment variables
-export PULUMI_ACCESS_TOKEN=pul-xxx
-export PULUMI_CI=true
-export PULUMI_SKIP_UPDATE_CHECK=true
+# Required environment variables (all three are important)
+export PULUMI_ACCESS_TOKEN=pul-xxx    # Authentication token
+export PULUMI_CI=true                  # Disables interactive prompts
+export PULUMI_SKIP_UPDATE_CHECK=true   # Avoids update check delays
 
 # Typical CI workflow
-pulumi login
-pulumi stack select prod
-pulumi preview
-pulumi up --yes
+pulumi login                           # Authenticates via PULUMI_ACCESS_TOKEN
+pulumi stack select prod               # Select target stack explicitly
+pulumi preview                         # Always preview before deploying
+pulumi up --yes                        # --yes for non-interactive confirmation
 ```
 
 ## Importing Existing Resources
