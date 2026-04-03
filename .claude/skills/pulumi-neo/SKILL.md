@@ -1,6 +1,6 @@
 ---
 name: pulumi-neo
-description: Manages cloud infrastructure through natural language conversations with Pulumi Neo, an AI agent for platform engineers. Enables infrastructure analysis, resource provisioning, stack deployment, and configuration management via conversational AI. Use when creating Neo tasks, requesting infrastructure analysis, automating cloud deployments, managing infrastructure as code (IaC), provisioning AWS/Azure/GCP resources, or managing infrastructure through natural language prompts.
+description: Manages cloud infrastructure through natural language conversations with Pulumi Neo, an AI agent for platform engineers. Enables infrastructure analysis, resource provisioning, stack deployment, and configuration management via conversational AI. Use when creating Neo tasks, requesting infrastructure analysis, automating cloud deployments, managing infrastructure as code (IaC), provisioning AWS/Azure/GCP resources, managing infrastructure through natural language prompts, reviewing PRs with Neo, handling Neo approval workflows, or checking Neo task status and events. Also use when the user mentions "Pulumi Neo", "Neo task", "Neo agent", or wants AI-assisted infrastructure management.
 ---
 
 # Pulumi Neo Skill
@@ -109,15 +109,23 @@ Attach entities for context: `stack` (name + project), `repository` (name + org 
 
 ### Approval Flow
 
-When Neo requires confirmation for an operation:
+When Neo requires confirmation for an operation (this is a key concept — Neo never makes destructive changes without asking):
 
 1. Task status remains `running` or transitions to `idle`
-2. An `agentResponse` event contains `tool_calls` with an `approval_request` tool
+2. An `agentResponse` event contains `tool_calls` with an `approval_request` tool — this is the specific event structure to look for
 3. The `approval_request_id` is found in the tool call parameters
 4. User reviews the proposed changes
-5. Send approval or cancellation via the API
+5. Send approval via `--approve` or cancellation via `--cancel`
 
-**Detecting approvals:** Check events for `eventBody.tool_calls` containing approval requests rather than relying on task status.
+**Detecting approvals:** Check events for `eventBody.tool_calls` containing `approval_request` entries rather than relying on task status. The approval_request_id from the tool call parameters is needed to respond.
+
+```bash
+# Approve a pending request
+python scripts/neo_task.py --org <org> --task-id <task-id> --approve
+
+# Cancel/reject a pending request
+python scripts/neo_task.py --org <org> --task-id <task-id> --cancel
+```
 
 ## Common Workflows
 

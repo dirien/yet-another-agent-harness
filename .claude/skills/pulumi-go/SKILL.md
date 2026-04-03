@@ -1,6 +1,6 @@
 ---
 name: pulumi-go
-description: Creates Pulumi infrastructure-as-code projects in Go, configures OIDC authentication, and integrates with Pulumi ESC for centralized secrets and configuration management. Use when setting up Pulumi Go projects, writing infrastructure code with Go, configuring OIDC for Pulumi, using Pulumi ESC with Go, or automating cloud infrastructure with Golang.
+description: Creates Pulumi infrastructure-as-code projects in Go, configures OIDC authentication, integrates with Pulumi ESC for centralized secrets and configuration management, and builds multi-language component resources. Use when setting up Pulumi Go projects, writing infrastructure code with Go, configuring OIDC for Pulumi, using Pulumi ESC with Go, automating cloud infrastructure with Golang, creating reusable Pulumi components in Go, or working with pulumi-go-provider. Also use when the user mentions Pulumi with Go/Golang, AWS/Azure/GCP infrastructure in Go, or Go-based ComponentResource patterns.
 ---
 
 # Pulumi Go Skill

@@ -1,6 +1,6 @@
 ---
 name: pulumi-typescript
-description: Scaffolds Pulumi TypeScript infrastructure-as-code projects, writes IaC code with proper resource configuration, manages Pulumi ESC environments for centralized secrets and configuration, and configures OIDC authentication for cloud providers. Use when the user asks to create Pulumi TypeScript projects, write Pulumi infrastructure code, set up ESC environments, configure OIDC for Pulumi, or implement infrastructure automation with Node.js/TypeScript.
+description: Scaffolds Pulumi TypeScript infrastructure-as-code projects, writes IaC code with proper resource configuration, manages Pulumi ESC environments for centralized secrets and configuration, configures OIDC authentication for cloud providers, and builds multi-language component resources. Use when the user asks to create Pulumi TypeScript projects, write Pulumi infrastructure code, set up ESC environments, configure OIDC for Pulumi, implement infrastructure automation with Node.js/TypeScript, create reusable Pulumi components, or work with stack references. Also use when the user mentions Pulumi with TypeScript, AWS/Azure/GCP infrastructure in TypeScript, or PulumiPlugin.yaml for multi-language components.
 ---
 
 # Pulumi TypeScript Skill
@@ -337,6 +337,9 @@ If `pulumi up` fails mid-deployment:
 - Enable OIDC authentication instead of static credentials
 - Use dynamic secrets with short TTLs when possible
 - Apply least-privilege IAM policies
+- Always enable server-side encryption on S3 buckets (AES256 or KMS) — this is a non-negotiable default
+- Block public access on S3 buckets unless explicitly required
+- Enable versioning on storage resources for data protection
 
 ### Code Organization
 - Use ComponentResources for reusable infrastructure patterns

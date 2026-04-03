@@ -1,0 +1,55 @@
+{
+  "skill_name": "pulumi-typescript",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Deploy an Azure Container App with a Cosmos DB NoSQL database, Key Vault for secrets, and Application Insights for monitoring using Pulumi TypeScript. Use Pulumi ESC for Azure OIDC credentials. Show me the full index.ts and ESC environment YAML.",
+      "expected_output": "Complete index.ts with Azure Container App, Cosmos DB, Key Vault, App Insights, and ESC YAML with Azure OIDC",
+      "files": [],
+      "expectations": [
+        "Imports @pulumi/azure-native or @pulumi/azure",
+        "Creates an Azure Container App resource with container configuration",
+        "Creates a Cosmos DB account with a database and container",
+        "Creates a Key Vault resource",
+        "Creates an Application Insights resource",
+        "Wires Key Vault secrets or Cosmos DB connection string to the Container App via env vars or secret refs",
+        "Includes ESC YAML with Azure OIDC login (fn::open::azure-login)",
+        "Exports relevant outputs (Container App URL, Cosmos DB endpoint, etc.)",
+        "Does not hardcode credentials"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a GCP Cloud Run service connected to Cloud SQL PostgreSQL, with a Pub/Sub topic for async events and a Cloud Storage bucket for file uploads using Pulumi TypeScript. Include proper IAM bindings and ESC environment for GCP credentials.",
+      "expected_output": "Complete index.ts with Cloud Run, Cloud SQL, Pub/Sub, GCS bucket, IAM bindings, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Imports @pulumi/gcp",
+        "Creates a Cloud Run service with container image configuration",
+        "Creates a Cloud SQL PostgreSQL instance",
+        "Creates a Pub/Sub topic and subscription",
+        "Creates a Cloud Storage bucket",
+        "Configures IAM bindings or service account for Cloud Run to access Cloud SQL and Pub/Sub",
+        "Includes ESC YAML with GCP OIDC login (fn::open::gcp-login)",
+        "Exports Cloud Run URL and other resource identifiers"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up an AWS API Gateway REST API backed by Lambda functions, with a Cognito user pool for authentication, an SQS queue for async processing, and a Secrets Manager secret for API keys. Use Pulumi TypeScript with ESC for AWS credentials.",
+      "expected_output": "Complete index.ts with API Gateway, Lambda, Cognito, SQS, Secrets Manager, and ESC YAML",
+      "files": [],
+      "expectations": [
+        "Creates an API Gateway REST API with routes/methods",
+        "Creates Lambda function(s) with proper IAM execution role",
+        "Creates a Cognito User Pool and configures it as API Gateway authorizer",
+        "Creates an SQS queue",
+        "Creates a Secrets Manager secret",
+        "Wires Lambda to API Gateway integration",
+        "Grants Lambda permissions to access SQS and Secrets Manager via IAM policy",
+        "Includes ESC YAML with pulumiConfig section",
+        "Exports API Gateway invoke URL and Cognito user pool ID"
+      ]
+    }
+  ]
+}

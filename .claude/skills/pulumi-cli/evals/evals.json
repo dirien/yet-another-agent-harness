@@ -1,0 +1,46 @@
+{
+  "skill_name": "pulumi-cli",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "My pulumi stack has a stuck pending create operation after a deploy was interrupted mid-way. The stack shows 'pending' operations when I try to run pulumi up again. How do I fix this and get back to a clean state without losing my existing resources?",
+      "expected_output": "Step-by-step recovery using pulumi refresh, cancel, state repair, and backup/restore patterns",
+      "files": [],
+      "expectations": [
+        "Recommends pulumi cancel or pulumi refresh --clear-pending-creates",
+        "Mentions pulumi state repair as an option",
+        "Suggests backing up state first with pulumi stack export --file",
+        "Explains that pulumi refresh syncs state with actual cloud resources",
+        "Does not suggest destroying the stack as first resort"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I need to move an S3 bucket resource from my 'dev' stack to the 'staging' stack without destroying and recreating it in AWS. Walk me through the exact commands.",
+      "expected_output": "Step-by-step using pulumi state move or export/import with URN identification",
+      "files": [],
+      "expectations": [
+        "Shows how to identify the resource URN (pulumi stack --show-urns or export)",
+        "Uses pulumi state move --source dev --dest staging with the URN",
+        "Mentions backing up state before the operation",
+        "Explains that the cloud resource is not affected by state operations",
+        "Shows the URN format: urn:pulumi:<stack>::<project>::<type>::<name>"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Set up a CI/CD pipeline configuration for Pulumi. I need the environment variables, the login command, and the deployment commands for a non-interactive GitHub Actions workflow that uses ESC for credentials.",
+      "expected_output": "CI/CD setup with env vars, pulumi login, stack select, preview, up --yes, and ESC integration",
+      "files": [],
+      "expectations": [
+        "Sets PULUMI_ACCESS_TOKEN environment variable",
+        "Sets PULUMI_CI=true for CI mode",
+        "Uses pulumi login for authentication",
+        "Uses pulumi stack select to choose the target stack",
+        "Runs pulumi preview before pulumi up",
+        "Uses --yes flag for non-interactive deployment",
+        "Shows ESC integration via pulumi config env add or pulumi env run"
+      ]
+    }
+  ]
+}

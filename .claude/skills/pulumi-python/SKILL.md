@@ -1,6 +1,6 @@
 ---
 name: pulumi-python
-description: Creates Pulumi infrastructure-as-code projects in Python, defines cloud resources (AWS, Azure, GCP), configures ESC environments for secrets management, and sets up OIDC authentication for secure deployments. Use when creating Pulumi Python projects, writing infrastructure code, configuring cloud providers, managing secrets with Pulumi ESC, setting up OIDC for Pulumi, or automating infrastructure deployments with Python.
+description: Creates Pulumi infrastructure-as-code projects in Python, defines cloud resources (AWS, Azure, GCP), configures ESC environments for secrets management, sets up OIDC authentication for secure deployments, and builds multi-language component resources. Use when creating Pulumi Python projects, writing infrastructure code, configuring cloud providers, managing secrets with Pulumi ESC, setting up OIDC for Pulumi, automating infrastructure deployments with Python, creating reusable Pulumi components in Python, or configuring Python toolchains (pip, poetry, uv) for Pulumi. Also use when the user mentions pyproject.toml with Pulumi, component_provider_host, or Python virtual environments for infrastructure code.
 ---
 
 # Pulumi Python Skill
@@ -328,6 +328,8 @@ pulumi package add /path/to/local/my-component
 - Args class must have `__init__` with typed parameters
 - Constructor must have `args` parameter with type annotation
 - Use `Optional[Input[T]]` for optional properties
+
+**Important:** Use `component_provider_host()` (from `pulumi.provider.experimental`) as the entry point for multi-language components. This is the modern API — the older `pulumi.provider.main()` with a custom Provider subclass is deprecated for component authoring.
 
 ### 6. Deployment Workflow
 

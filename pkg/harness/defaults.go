@@ -484,7 +484,7 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnableAgentRules {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"agent-rules", "Generate and maintain AGENTS.md files following the agents.md convention",
-			"github.com/netresearch/agent-rules-skill@96cde6c491d854c89ad419b1ba543fa6545748aa", "skills/agent-rules/SKILL.md",
+			"github.com/netresearch/agent-rules-skill@9b67bf594a52b1a7d38d8b0ec0a076a31f8d3d7e", "skills/agent-rules/SKILL.md",
 		))
 	}
 
