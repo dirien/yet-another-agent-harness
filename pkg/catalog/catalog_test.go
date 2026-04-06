@@ -251,6 +251,22 @@ func TestBundlesForSkill(t *testing.T) {
 	}
 }
 
+func TestWorkflowBundle(t *testing.T) {
+	cat := DefaultCatalog()
+	b := cat.BundleByID("workflow")
+	if b == nil {
+		t.Fatal("workflow bundle not found")
+	}
+	if len(b.SkillIDs) != 29 {
+		t.Errorf("expected 29 skills in workflow bundle, got %d", len(b.SkillIDs))
+	}
+	for _, id := range b.SkillIDs {
+		if cat.ByID(id) == nil {
+			t.Errorf("workflow bundle references unknown skill %q", id)
+		}
+	}
+}
+
 func TestNilCatalog(t *testing.T) {
 	var c *Catalog
 

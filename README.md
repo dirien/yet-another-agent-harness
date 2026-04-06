@@ -28,8 +28,8 @@ That single command gives you:
 - Multi-agent config generation with per-agent adaptations (MCP format, hook delivery, agent tools, skill frontmatter)
 - LSP support for Go, Python, TypeScript, and C# via the official marketplace
 - Session tracking that logs every tool call, blocked command, and file modification across sessions
-- 3 built-in skills (commit, PR, review) plus 46 remote skills covering Pulumi IaC, Flux CD GitOps, Go, Python, TypeScript, Kubernetes, DevOps, SRE, security auditing, code quality, tech debt analysis, and more
-- 12 agents: 3 built-in (executor, librarian, reviewer) plus 9 remote agents from [agency-agents](https://github.com/msitarzewski/agency-agents) covering AI engineering, backend architecture, security, code review, DevOps, SRE, and testing
+- 3 built-in skills (commit, PR, review) plus 74 remote and workflow skills covering Pulumi IaC, Flux CD GitOps, Go, Python, TypeScript, Kubernetes, DevOps, SRE, security auditing, code quality, tech debt analysis, and more
+- 16 agents: 3 built-in (executor, librarian, reviewer) plus 4 workflow agents (researcher, planner, doc-writer, verifier) and 9 remote agents from [agency-agents](https://github.com/msitarzewski/agency-agents) covering AI engineering, backend architecture, security, code review, DevOps, SRE, and testing
 - Plugin support with marketplace auto-enablement — ships with [OpenAI Codex](https://github.com/openai/codex-plugin-cc) for code review and task delegation
 
 Don't want all of it? Turn off what you don't need:
@@ -82,6 +82,90 @@ LSP Servers:
   ✓ pyright                  /usr/local/bin/pyright-langserver
   ✗ csharp                   not found → dotnet tool install -g csharp-ls
 ```
+
+## Workflow
+
+yaah includes a structured project workflow with 29 slash commands. All commands are namespaced as `/yaah:*` and are registered as explicit user commands — the model never auto-triggers them.
+
+### Lifecycle
+
+```
+/yaah:init → /yaah:discuss → /yaah:plan → /yaah:execute → /yaah:verify → /yaah:ship
+                                                                    ↓
+/yaah:next ← /yaah:progress ← /yaah:complete-milestone ← /yaah:docs
+```
+
+### Command reference
+
+| Command | Description | Subagent |
+|---------|-------------|----------|
+| **Core Workflow** | | |
+| `/yaah:init` | Project onboarding: discover codebase, set vision, create roadmap | Yes |
+| `/yaah:discuss` | Capture implementation decisions before planning | Yes |
+| `/yaah:plan` | Create wave-grouped implementation plans | Yes |
+| `/yaah:execute` | Execute plans wave by wave with parallel subagents | Yes |
+| `/yaah:verify` | Three-level artifact verification against plan | Yes |
+| `/yaah:docs` | Generate codebase-verified documentation | Yes |
+| `/yaah:next` | Auto-detect and recommend next step | No |
+| `/yaah:quick` | Execute a task without full planning | Yes |
+| **Shipping & Milestones** | | |
+| `/yaah:ship` | Create PR from verified phase work | Yes |
+| `/yaah:complete-milestone` | Archive milestone, tag release, generate changelog | Yes |
+| `/yaah:new-milestone` | Start new version cycle with fresh goals | Yes |
+| **Session Management** | | |
+| `/yaah:pause` | Save session state for later resumption | No |
+| `/yaah:resume` | Resume from previous session handoff | No |
+| **Phase Management** | | |
+| `/yaah:add-phase` | Add phase to end of roadmap | No |
+| `/yaah:insert-phase` | Insert urgent phase between existing ones | No |
+| `/yaah:remove-phase` | Remove a future phase | No |
+| **Quality & Security** | | |
+| `/yaah:review` | Structured code review of phase implementation | Yes |
+| `/yaah:secure` | STRIDE threat modeling and vulnerability analysis | Yes |
+| `/yaah:health` | Validate `.planning/` integrity and consistency | No |
+| **Status & Capture** | | |
+| `/yaah:progress` | Detailed project progress with metrics | No |
+| `/yaah:todo` | Capture, list, or complete quick todo items | No |
+| `/yaah:note` | Zero-friction idea capture | No |
+| **Configuration** | | |
+| `/yaah:settings` | View or update workflow configuration | No |
+| **Analysis & Advanced** | | |
+| `/yaah:explore` | Interactive codebase exploration | Yes |
+| `/yaah:scan` | Scan for security, quality, dependency issues | Yes |
+| `/yaah:import` | Import existing project into planning workflow | Yes |
+| `/yaah:autonomous` | Run full workflow without human intervention | Yes |
+| `/yaah:forensics` | Investigate failed or stuck workflow runs | Yes |
+| `/yaah:cleanup` | Clean up temporary planning artifacts | No |
+
+### .planning/ directory structure
+
+```
+.planning/
+├── PROJECT.md          # Vision, goals, tech stack, constraints
+├── REQUIREMENTS.md     # Scoped requirements with REQ-IDs
+├── ROADMAP.md          # Phases with scope, success criteria, status
+├── STATE.md            # Current position and progress tracking
+├── HANDOFF.md          # Session pause/resume state
+├── TODOS.md            # Quick todo items
+├── config.json         # Workflow settings
+├── research/           # Project-level research
+├── phases/             # Per-phase artifacts
+│   └── 01-auth/
+│       ├── CONTEXT.md        # Implementation decisions
+│       ├── RESEARCH.md       # Phase-specific research
+│       ├── 01-01-PLAN.md     # Task plan with wave grouping
+│       ├── 01-01-SUMMARY.md  # Execution outcomes
+│       ├── VERIFICATION.md   # Validation results
+│       ├── REVIEW.md         # Code review findings
+│       ├── SECURITY.md       # Threat model (STRIDE)
+│       └── CHANGELOG.md      # Milestone changelog
+├── quick/              # Ad-hoc task records
+└── notes/              # Idea captures
+```
+
+Four specialized agents back the workflow: `researcher` (sonnet, read-only), `planner` (opus, goal-backward decomposition), `doc-writer` (sonnet, codebase-verified docs), and `verifier` (sonnet, artifact validation). Two MCP tools are also exposed: `yaah_planning_status` and `yaah_planning_init`.
+
+See [Components documentation](docs/components.md#workflow-commands) for full details.
 
 ## Runtime features
 

@@ -586,6 +586,213 @@ type CommandWithAdvanced interface {
 | `context`                  | string | Set to `fork` for subagent execution          |
 | `agent`                    | string | Subagent type when `context=fork`             |
 
+## Workflow Commands
+
+yaah ships 29 built-in workflow commands that provide a structured project lifecycle. These are registered as **commands** (not skills) because they should only be invoked explicitly by the user, never auto-triggered by the model.
+
+### Lifecycle
+
+```
+/yaah:init → /yaah:discuss → /yaah:plan → /yaah:execute → /yaah:verify → /yaah:ship
+                                                                    ↓
+/yaah:next ← /yaah:progress ← /yaah:complete-milestone ← /yaah:docs
+```
+
+### Core Workflow (8 commands)
+
+#### /yaah:init — Project Onboarding
+
+Analyzes the codebase, asks about your vision and goals, then creates a `.planning/` directory with:
+
+| File | Purpose |
+|------|---------|
+| `PROJECT.md` | Vision, goals, tech stack, constraints |
+| `REQUIREMENTS.md` | Scoped requirements with REQ-IDs |
+| `ROADMAP.md` | Phases with scope and success criteria |
+| `STATE.md` | Current position and progress tracking |
+| `config.json` | Workflow settings |
+| `research/` | Stack, architecture, pitfalls analysis |
+
+```go
+opts := harness.DefaultOptions{
+    EnableInitCommand: true,
+}
+```
+
+#### /yaah:discuss — Capture Implementation Decisions
+
+Identifies gray areas in a phase and asks targeted questions to lock implementation decisions before planning. Creates `CONTEXT.md` with locked decisions that the planner and executor must honor.
+
+#### /yaah:plan — Phase Planning
+
+Uses goal-backward methodology to create structured plans with:
+- Tasks grouped into **waves** (parallel within, sequential across)
+- Concrete verify criteria (runnable commands, not "check it works")
+- File lists with zero overlap within a wave
+- RESEARCH.md with tagged findings (`[VERIFIED]`, `[CITED]`, `[ASSUMED]`)
+
+#### /yaah:execute — Wave-Based Execution
+
+Reads plans and executes them wave by wave:
+1. Groups plans by wave number
+2. Checks for file conflicts within each wave
+3. Spawns parallel executor subagents (one per plan, fresh context each)
+4. Atomic git commit per task
+5. Writes SUMMARY.md per plan with deviations
+6. Supports resumption (skips plans with existing SUMMARYs)
+
+Flags: `--wave N` (execute specific wave), `--interactive` (no subagents, sequential).
+
+#### /yaah:verify — Post-Execution Verification
+
+Three-level artifact checks:
+- **Existence**: files, functions, types present
+- **Content**: logic is substantive (not stubs)
+- **Wiring**: imports, registrations, route mounting
+
+Also runs build + test commands and produces VERIFICATION.md with PASS/FAIL/PARTIAL per task.
+
+#### /yaah:docs — Documentation Generation
+
+Detects project type (API, CLI, library, monorepo) and generates docs in waves:
+- Wave 1: README.md, ARCHITECTURE.md
+- Wave 2: GETTING-STARTED.md, DEVELOPMENT.md, TESTING.md, API.md
+
+Every claim is verified against source code. Undiscoverable claims get `<!-- VERIFY: ... -->` markers.
+
+#### /yaah:next — Auto-Detect Next Step
+
+Reads `.planning/STATE.md` and recommends exactly one action. Lightweight (runs in main context, read-only).
+
+#### /yaah:quick — Quick Task
+
+Executes a task without full planning. Optional flags: `--discuss`, `--research`, `--validate`.
+
+### Shipping & Milestones (3 commands)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:ship` | Create a pull request from verified phase work |
+| `/yaah:complete-milestone` | Archive current milestone, tag release, generate CHANGELOG.md |
+| `/yaah:new-milestone` | Start a new version cycle with fresh goals |
+
+### Session Management (2 commands)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:pause` | Save current session state to HANDOFF.md for later resumption |
+| `/yaah:resume` | Resume work from a previous session handoff |
+
+### Phase Management (3 commands)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:add-phase` | Add a new phase to the end of the roadmap |
+| `/yaah:insert-phase` | Insert an urgent phase between existing ones |
+| `/yaah:remove-phase` | Remove a future phase from the roadmap |
+
+### Quality & Security (3 commands)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:review` | Structured code review of a phase implementation |
+| `/yaah:secure` | STRIDE threat modeling and vulnerability analysis for a phase |
+| `/yaah:health` | Validate `.planning/` directory integrity and consistency |
+
+### Status & Capture (3 commands)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:progress` | Detailed project progress with metrics |
+| `/yaah:todo` | Capture, list, or complete quick todo items (TODOS.md) |
+| `/yaah:note` | Zero-friction idea capture to `notes/` |
+
+### Configuration (1 command)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:settings` | View or update workflow configuration |
+
+### Analysis & Advanced (6 commands)
+
+| Command | Description |
+|---------|-------------|
+| `/yaah:explore` | Interactive codebase exploration and analysis |
+| `/yaah:scan` | Scan for security, quality, and dependency issues |
+| `/yaah:import` | Import an existing project into the planning workflow |
+| `/yaah:autonomous` | Run the full workflow autonomously for a phase |
+| `/yaah:forensics` | Investigate failed or stuck workflow runs |
+| `/yaah:cleanup` | Clean up temporary planning artifacts and state |
+
+### Workflow Agents
+
+Four specialized agents support the workflow commands:
+
+| Agent | Model | Purpose |
+|-------|-------|---------|
+| `researcher` | sonnet | Read-only codebase investigation, tagged findings |
+| `planner` | opus | Goal-backward task decomposition, wave grouping |
+| `doc-writer` | sonnet | Codebase-verified documentation generation |
+| `verifier` | sonnet | Three-level artifact validation |
+
+### MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `yaah_planning_status` | Show current planning state (phase, progress, blockers) |
+| `yaah_planning_init` | Initialize `.planning/` directory structure |
+
+### Enabling workflow commands
+
+All workflow commands are enabled by default in `AllDefaults()`. To selectively enable individual commands, pass the corresponding enable flag in `DefaultOptions`:
+
+```go
+opts := harness.DefaultOptions{
+    // Core workflow
+    EnableInitCommand:    true,
+    EnableDiscussCommand: true,
+    EnablePlanCommand:    true,
+    EnableExecuteCommand: true,
+    EnableVerifyCommand:  true,
+    EnableDocsCommand:    true,
+    EnableNextCommand:    true,
+    EnableQuickCommand:   true,
+    // Shipping
+    EnableShipCommand:              true,
+    EnableCompleteMilestoneCommand: true,
+    EnableNewMilestoneCommand:      true,
+    // Session management
+    EnablePauseCommand:  true,
+    EnableResumeCommand: true,
+    // Phase management
+    EnableAddPhaseCommand:    true,
+    EnableInsertPhaseCommand: true,
+    EnableRemovePhaseCommand: true,
+    // Quality & security
+    EnableReviewCommand: true,
+    EnableSecureCommand: true,
+    EnableHealthCommand: true,
+    // Status & capture
+    EnableProgressCommand: true,
+    EnableTodoCommand:     true,
+    EnableNoteCommand:     true,
+    // Configuration
+    EnableSettingsCommand: true,
+    // Analysis & advanced
+    EnableExploreCommand:    true,
+    EnableScanCommand:       true,
+    EnableImportCommand:     true,
+    EnableAutonomousCommand: true,
+    EnableForensicsCommand:  true,
+    EnableCleanupCommand:    true,
+    // Workflow agents
+    EnableResearcher: true,
+    EnablePlanner:    true,
+    EnableDocWriter:  true,
+    EnableVerifier:   true,
+}
+```
+
 ## Plugins
 
 The `schema.Plugin` struct matches the official Claude Code `plugin.json` spec.

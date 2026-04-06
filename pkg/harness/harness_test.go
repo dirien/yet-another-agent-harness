@@ -89,3 +89,25 @@ func TestHarness_Summary(t *testing.T) {
 		t.Fatal("Summary() returned empty string")
 	}
 }
+
+func TestHarness_DefaultsIncludeWorkflowCommands(t *testing.T) {
+	h := harness.NewWithDefaults(harness.AllDefaults())
+	cmds := h.Commands().Commands()
+	if len(cmds) < 29 {
+		t.Errorf("expected at least 29 commands, got %d", len(cmds))
+	}
+	names := make(map[string]bool)
+	for _, c := range cmds {
+		names[c.Name()] = true
+	}
+	for _, want := range []string{
+		"yaah/init", "yaah/discuss", "yaah/plan", "yaah/execute", "yaah/verify", "yaah/docs", "yaah/next", "yaah/quick",
+		"yaah/ship", "yaah/pause", "yaah/resume", "yaah/complete-milestone", "yaah/new-milestone", "yaah/settings",
+		"yaah/add-phase", "yaah/insert-phase", "yaah/remove-phase", "yaah/health", "yaah/progress", "yaah/review",
+		"yaah/secure", "yaah/todo", "yaah/note", "yaah/cleanup", "yaah/forensics", "yaah/explore", "yaah/scan", "yaah/import", "yaah/autonomous",
+	} {
+		if !names[want] {
+			t.Errorf("missing command %q", want)
+		}
+	}
+}

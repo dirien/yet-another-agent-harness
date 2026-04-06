@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks"
@@ -38,6 +39,16 @@ type DoctorArgs struct{}
 // SessionInfoArgs holds the arguments for the yaah_session_info tool.
 type SessionInfoArgs struct {
 	SessionID string `json:"session_id,omitempty" jsonschema:"session ID to look up. If omitted, returns basic server info."`
+}
+
+// PlanningStatusArgs holds the arguments for the yaah_planning_status tool.
+type PlanningStatusArgs struct {
+	ProjectDir string `json:"project_dir,omitempty" jsonschema:"project root directory, defaults to cwd"`
+}
+
+// PlanningInitArgs holds the arguments for the yaah_planning_init tool.
+type PlanningInitArgs struct {
+	ProjectDir string `json:"project_dir,omitempty" jsonschema:"project root directory, defaults to cwd"`
 }
 
 // ---------- tool registration ----------
@@ -245,6 +256,184 @@ func (s *Server) addSessionInfoTool() {
 			SkillCount: len(s.harness.Skills().Skills()),
 		}
 		data, _ := json.Marshal(info)
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: string(data)}},
+		}, nil, nil
+	})
+}
+
+func (s *Server) addPlanningStatusTool() {
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "yaah_planning_status",
+		Description: "Return the current planning status for a project's .planning/ directory",
+	}, func(_ context.Context, _ *mcp.CallToolRequest, args PlanningStatusArgs) (*mcp.CallToolResult, any, error) {
+		dir := args.ProjectDir
+		if dir == "" {
+			var err error
+			dir, err = os.Getwd()
+			if err != nil {
+				return nil, nil, fmt.Errorf("get cwd: %w", err)
+			}
+		}
+
+		planningDir := filepath.Join(dir, ".planning")
+		if _, err := os.Stat(planningDir); os.IsNotExist(err) {
+			data, _ := json.Marshal(map[string]bool{"initialized": false})
+			return &mcp.CallToolResult{
+				Content: []mcp.Content{&mcp.TextContent{Text: string(data)}},
+			}, nil, nil
+		}
+
+		type planningStatus struct {
+			Initialized    bool   `json:"initialized"`
+			CurrentPhase   int    `json:"currentPhase"`
+			Status         string `json:"status"`
+			TotalPhases    int    `json:"totalPhases"`
+			PlansCreated   int    `json:"plansCreated"`
+			PlansExecuted  int    `json:"plansExecuted"`
+			PhasesVerified int    `json:"phasesVerified"`
+			QuickTaskCount int    `json:"quickTaskCount"`
+			LastUpdated    string `json:"lastUpdated"`
+		}
+
+		result := planningStatus{Initialized: true}
+
+		// Parse YAML frontmatter from STATE.md.
+		stateFile := filepath.Join(planningDir, "STATE.md")
+		if raw, err := os.ReadFile(stateFile); err == nil {
+			content := string(raw)
+			// Extract text between the first pair of --- markers.
+			parts := strings.SplitN(content, "---", 3)
+			if len(parts) >= 3 {
+				for _, line := range strings.Split(parts[1], "\n") {
+					line = strings.TrimSpace(line)
+					if strings.HasPrefix(line, "phase:") {
+						val := strings.TrimSpace(strings.TrimPrefix(line, "phase:"))
+						var phase int
+						if _, err := fmt.Sscanf(val, "%d", &phase); err == nil {
+							result.CurrentPhase = phase
+						}
+					} else if strings.HasPrefix(line, "status:") {
+						result.Status = strings.TrimSpace(strings.TrimPrefix(line, "status:"))
+					} else if strings.HasPrefix(line, "last_updated:") {
+						result.LastUpdated = strings.TrimSpace(strings.TrimPrefix(line, "last_updated:"))
+					}
+				}
+			}
+		}
+
+		// Count phase subdirectories.
+		phasesDir := filepath.Join(planningDir, "phases")
+		if entries, err := os.ReadDir(phasesDir); err == nil {
+			for _, e := range entries {
+				if e.IsDir() {
+					result.TotalPhases++
+				}
+			}
+
+			// Count plan, summary, and verification files across phase subdirs.
+			if plans, err := filepath.Glob(filepath.Join(phasesDir, "*", "*-PLAN.md")); err == nil {
+				result.PlansCreated = len(plans)
+			}
+			if summaries, err := filepath.Glob(filepath.Join(phasesDir, "*", "*-SUMMARY.md")); err == nil {
+				result.PlansExecuted = len(summaries)
+			}
+			if verifications, err := filepath.Glob(filepath.Join(phasesDir, "*", "VERIFICATION.md")); err == nil {
+				result.PhasesVerified = len(verifications)
+			}
+		}
+
+		// Count quick task files.
+		quickDir := filepath.Join(planningDir, "quick")
+		if entries, err := os.ReadDir(quickDir); err == nil {
+			for _, e := range entries {
+				if !e.IsDir() {
+					result.QuickTaskCount++
+				}
+			}
+		}
+
+		data, _ := json.Marshal(result)
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{&mcp.TextContent{Text: string(data)}},
+		}, nil, nil
+	})
+}
+
+func (s *Server) addPlanningInitTool() {
+	mcp.AddTool(s.mcpServer, &mcp.Tool{
+		Name:        "yaah_planning_init",
+		Description: "Initialize a .planning/ directory structure in the project root",
+	}, func(_ context.Context, _ *mcp.CallToolRequest, args PlanningInitArgs) (*mcp.CallToolResult, any, error) {
+		dir := args.ProjectDir
+		if dir == "" {
+			var err error
+			dir, err = os.Getwd()
+			if err != nil {
+				return nil, nil, fmt.Errorf("get cwd: %w", err)
+			}
+		}
+
+		planningDir := filepath.Join(dir, ".planning")
+		if _, err := os.Stat(planningDir); err == nil {
+			return nil, nil, fmt.Errorf("planning directory already exists")
+		}
+
+		dirs := []string{
+			planningDir,
+			filepath.Join(planningDir, "phases"),
+			filepath.Join(planningDir, "quick"),
+			filepath.Join(planningDir, "notes"),
+			filepath.Join(planningDir, "research"),
+		}
+
+		for _, d := range dirs {
+			if err := os.MkdirAll(d, 0o755); err != nil {
+				return nil, nil, fmt.Errorf("create directory %s: %w", d, err)
+			}
+		}
+
+		now := time.Now().UTC().Format(time.RFC3339)
+		stateContent := "---\n" +
+			"milestone: v1.0\n" +
+			"phase: 0\n" +
+			"status: initialized\n" +
+			"last_updated: " + now + "\n" +
+			"---\n" +
+			"# Current Position\n" +
+			"Initialized. Run `/init` to set up project context, or `/plan 1` to start planning.\n" +
+			"# Decisions Made\n" +
+			"(none yet)\n" +
+			"# Quick Tasks Completed\n" +
+			"(none yet)\n"
+
+		stateFile := filepath.Join(planningDir, "STATE.md")
+		if err := os.WriteFile(stateFile, []byte(stateContent), 0o644); err != nil {
+			return nil, nil, fmt.Errorf("write STATE.md: %w", err)
+		}
+
+		// Build relative paths for the response.
+		created := make([]string, 0, len(dirs)+1)
+		for _, d := range dirs {
+			rel, err := filepath.Rel(dir, d)
+			if err != nil {
+				rel = d
+			}
+			created = append(created, rel)
+		}
+
+		type initResult struct {
+			Created   []string `json:"created"`
+			StateFile string   `json:"state_file"`
+		}
+		stateRel, err := filepath.Rel(dir, stateFile)
+		if err != nil {
+			stateRel = stateFile
+		}
+		data, _ := json.Marshal(initResult{
+			Created:   created,
+			StateFile: stateRel,
+		})
 		return &mcp.CallToolResult{
 			Content: []mcp.Content{&mcp.TextContent{Text: string(data)}},
 		}, nil, nil

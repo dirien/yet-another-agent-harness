@@ -34,6 +34,7 @@
         <li><a href="#agents">Agents</a></li>
         <li><a href="#install">Install</a></li>
         <li><a href="#cli">CLI</a></li>
+        <li><a href="#workflow">Workflow</a></li>
         <li>
           <a href="https://github.com/dirien/yet-another-agent-harness" class="nav-github" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -83,8 +84,8 @@
           <div><span class="prompt">$</span> <span class="cmd">yaah generate</span></div>
           <div><span class="output">&nbsp;</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/settings.json</span></div>
-          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/skills/</span> <span class="output">(49 skills)</span></div>
-          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/agents/</span> <span class="output">(12 agents)</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/skills/</span> <span class="output">(77 skills)</span></div>
+          <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.claude/agents/</span> <span class="output">(16 agents)</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.mcp.json</span> <span class="output">(3 servers)</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">opencode.json</span></div>
           <div><span class="success">&#10004;</span> <span class="output">Generated</span> <span class="file">.codex/config.toml</span></div>
@@ -100,15 +101,15 @@
           <div class="stat-label">Agents</div>
         </div>
         <div class="stat">
-          <div class="stat-value">49</div>
+          <div class="stat-value">77</div>
           <div class="stat-label">Skills</div>
         </div>
         <div class="stat">
-          <div class="stat-value">5</div>
-          <div class="stat-label">Hooks</div>
+          <div class="stat-value">29</div>
+          <div class="stat-label">Commands</div>
         </div>
         <div class="stat">
-          <div class="stat-value">12</div>
+          <div class="stat-value">16</div>
           <div class="stat-label">Sub-Agents</div>
         </div>
       </div>
@@ -175,7 +176,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
           </div>
           <h3>Skill Catalog</h3>
-          <p>49 skills organized by category, tags, risk level, and bundles. Search, filter, and discover skills via <code>yaah skills</code> CLI. Extend with external registries.</p>
+          <p>77 skills organized by category, tags, risk level, and bundles. Search, filter, and discover skills via <code>yaah skills</code> CLI. Extend with external registries.</p>
         </div>
 
         <div class="feature-card fade-in">
@@ -183,7 +184,7 @@
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
           </div>
           <h3>Sub-Agents</h3>
-          <p>12 agents: executor, librarian, reviewer built in, plus 9 remote agents for AI engineering, security, code review, DevOps, SRE, and performance benchmarking.</p>
+          <p>16 agents: executor, librarian, reviewer (built-in), researcher, planner, doc-writer, verifier (workflow), plus 9 remote agents for AI engineering, security, code review, DevOps, SRE, and performance benchmarking.</p>
         </div>
 
         <div class="feature-card fade-in">
@@ -216,6 +217,253 @@
           </div>
           <h3>Extensible Architecture</h3>
           <p>Interface + registry pattern throughout. Implement <code>hooks.Handler</code>, <code>mcp.Provider</code>, <code>skills.Skill</code>, or <code>agents.Agent</code> and register it. Same pattern everywhere.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ WORKFLOW ═══ -->
+  <section id="workflow">
+    <div class="container">
+      <div class="section-header section-header--center fade-in">
+        <p class="section-label">Project Workflow</p>
+        <h2 class="section-title">From zero to shipped with <span class="accent">structured commands</span></h2>
+        <p class="section-subtitle">29 slash commands that guide your AI agent through the full project lifecycle.</p>
+      </div>
+
+      <div class="workflow-flow fade-in" style="text-align: center; margin: 2rem 0 3rem; font-family: monospace; font-size: 1rem; color: var(--text-secondary); line-height: 2.2;">
+        <span style="color: var(--accent)">/yaah:init</span> &rarr;
+        <span style="color: var(--accent)">/yaah:discuss</span> &rarr;
+        <span style="color: var(--accent)">/yaah:plan</span> &rarr;
+        <span style="color: var(--accent)">/yaah:execute</span> &rarr;
+        <span style="color: var(--accent)">/yaah:verify</span> &rarr;
+        <span style="color: var(--accent)">/yaah:ship</span>
+        <br>
+        <span style="opacity: 0.6; font-size: 0.85em;">/yaah:next &middot; /yaah:progress &middot; /yaah:complete-milestone &middot; /yaah:docs</span>
+      </div>
+
+      <p class="section-subtitle fade-in" style="text-align:center; margin-bottom: 1.5rem; font-weight: 600;">Core Workflow</p>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <h3>/yaah:init</h3>
+          <p>Onboard a project: detect tech stack, ask about goals, create a roadmap with phases in <code>.planning/</code>.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <h3>/yaah:discuss</h3>
+          <p>Capture implementation decisions before planning. Eliminates gray areas with targeted questions.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3>/yaah:plan</h3>
+          <p>Create wave-grouped plans with concrete verify criteria. Goal-backward methodology, max 3 tasks per plan.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>/yaah:execute</h3>
+          <p>Run plans wave-by-wave with parallel subagents. Atomic commits per task, automatic resumption.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <h3>/yaah:verify</h3>
+          <p>Three-level artifact checks: existence, content, wiring. Stub detection and requirements traceability.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/><line x1="12" y1="6" x2="12" y2="13"/><line x1="8" y1="10" x2="16" y2="10"/></svg>
+          </div>
+          <h3>/yaah:docs</h3>
+          <p>Generate codebase-verified documentation. Every claim traced to source code.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+          </div>
+          <h3>/yaah:next</h3>
+          <p>Auto-detect the next workflow step. One recommendation, exact command to run.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>/yaah:quick</h3>
+          <p>Execute a task without full planning. Optional <code>--discuss</code>, <code>--research</code>, <code>--validate</code> flags.</p>
+        </div>
+      </div>
+
+      <p class="section-subtitle fade-in" style="text-align:center; margin: 2rem 0 1.5rem; font-weight: 600;">Shipping &amp; Milestones</p>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+          </div>
+          <h3>/yaah:ship</h3>
+          <p>Create a pull request from verified phase work. Runs pre-flight checks before opening the PR.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <h3>/yaah:complete-milestone</h3>
+          <p>Archive current milestone, tag release, and generate CHANGELOG.md. Closes the cycle cleanly.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <h3>/yaah:new-milestone</h3>
+          <p>Start a new version cycle with fresh goals. Resets progress tracking for the next phase set.</p>
+        </div>
+      </div>
+
+      <p class="section-subtitle fade-in" style="text-align:center; margin: 2rem 0 1.5rem; font-weight: 600;">Session &amp; Phase Management</p>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </div>
+          <h3>/yaah:pause</h3>
+          <p>Save session state to HANDOFF.md. Another session can pick up exactly where you left off.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <h3>/yaah:resume</h3>
+          <p>Resume work from a previous session's HANDOFF.md. Full context restored, no re-discovery needed.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </div>
+          <h3>/yaah:add-phase · insert · remove</h3>
+          <p>Manage roadmap phases. Add to end, insert urgently between existing ones, or remove future phases.</p>
+        </div>
+      </div>
+
+      <p class="section-subtitle fade-in" style="text-align:center; margin: 2rem 0 1.5rem; font-weight: 600;">Quality, Security &amp; Analysis</p>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3>/yaah:review</h3>
+          <p>Structured code review of a phase implementation. Checks for bugs, security issues, and code quality.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>/yaah:secure</h3>
+          <p>STRIDE threat modeling and vulnerability analysis for a phase. Produces SECURITY.md.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          </div>
+          <h3>/yaah:scan</h3>
+          <p>Scan for security vulnerabilities, code quality issues, and stale dependencies in one pass.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <h3>/yaah:explore</h3>
+          <p>Interactive codebase exploration and analysis. Understand structure before diving in.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <h3>/yaah:health</h3>
+          <p>Validate <code>.planning/</code> directory integrity. Catches corrupted state before it causes issues.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <h3>/yaah:forensics</h3>
+          <p>Investigate failed or stuck workflow runs. Diagnose what went wrong and how to recover.</p>
+        </div>
+      </div>
+
+      <p class="section-subtitle fade-in" style="text-align:center; margin: 2rem 0 1.5rem; font-weight: 600;">Status, Capture &amp; Automation</p>
+      <div class="features-grid">
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          </div>
+          <h3>/yaah:progress</h3>
+          <p>Detailed project progress with metrics: phases done, tasks remaining, velocity, and blockers.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          </div>
+          <h3>/yaah:todo · note</h3>
+          <p>Zero-friction capture. Todos go to TODOS.md; notes land in <code>notes/</code> without interrupting flow.</p>
+        </div>
+
+        <div class="feature-card fade-in">
+          <div class="feature-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00d4aa" stroke-width="2"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          </div>
+          <h3>/yaah:import · autonomous</h3>
+          <p>Import an existing project into the planning workflow, or run the full cycle without human checkpoints.</p>
+        </div>
+      </div>
+
+      <div class="fade-in" style="margin-top: 2.5rem;">
+        <div class="step-code" style="max-width: 540px; margin: 0 auto;">
+.planning/
+├── PROJECT.md
+├── REQUIREMENTS.md
+├── ROADMAP.md
+├── STATE.md
+├── HANDOFF.md
+├── TODOS.md
+├── config.json
+├── research/
+├── phases/
+│   └── 01-auth/
+│       ├── CONTEXT.md
+│       ├── RESEARCH.md
+│       ├── 01-01-PLAN.md
+│       ├── 01-01-SUMMARY.md
+│       ├── VERIFICATION.md
+│       ├── REVIEW.md
+│       ├── SECURITY.md
+│       └── CHANGELOG.md
+├── quick/
+└── notes/
         </div>
       </div>
     </div>

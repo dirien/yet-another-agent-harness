@@ -8,7 +8,7 @@ const (
 	apolloSkillsRef          = "github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc"
 	wshobsonAgentsRef        = "github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11"
 	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@9b67bf594a52b1a7d38d8b0ec0a076a31f8d3d7e"
-	rshadeAgentSkillsRef    = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
+	rshadeAgentSkillsRef     = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
 )
 
 // DefaultCatalog returns the complete catalog of all built-in and remote skills with bundles.
@@ -39,6 +39,182 @@ func defaultSkills() []CatalogEntry {
 			Description: "Review code changes for quality, security, and correctness",
 			Category:    CategorySecurity, Tags: []string{"code-review", "security", "quality"},
 			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+
+		// Built-in workflow commands.
+		{
+			ID: "yaah/init", Name: "yaah/init",
+			Description: "Project onboarding: discover codebase, set vision, create roadmap",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "onboarding", "project-setup"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/discuss", Name: "yaah/discuss",
+			Description: "Capture implementation decisions before planning",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "decisions", "context"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/plan", Name: "yaah/plan",
+			Description: "Create a structured implementation plan for a project phase",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "tasks", "waves"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/execute", Name: "yaah/execute",
+			Description: "Execute implementation plans wave by wave",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "execution", "waves"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/verify", Name: "yaah/verify",
+			Description: "Verify implementation against plan requirements",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "verification", "quality"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/docs", Name: "yaah/docs",
+			Description: "Generate or update project documentation from codebase analysis",
+			Category:    CategoryWorkflow, Tags: []string{"documentation", "generation", "verification"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/next", Name: "yaah/next",
+			Description: "Auto-detect and recommend the next workflow step",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "navigation", "status"},
+			Risk: RiskNone, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/quick", Name: "yaah/quick",
+			Description: "Execute a task without full planning overhead",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "quick", "task"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/ship", Name: "yaah/ship",
+			Description: "Create a pull request from verified phase work",
+			Category:    CategoryWorkflow, Tags: []string{"shipping", "pull-request", "release"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/pause", Name: "yaah/pause",
+			Description: "Save current session state for later resumption",
+			Category:    CategoryWorkflow, Tags: []string{"session", "handoff", "pause"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/resume", Name: "yaah/resume",
+			Description: "Resume work from a previous session handoff",
+			Category:    CategoryWorkflow, Tags: []string{"session", "handoff", "resume"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/complete-milestone", Name: "yaah/complete-milestone",
+			Description: "Archive current milestone, tag release, generate changelog",
+			Category:    CategoryWorkflow, Tags: []string{"milestone", "release", "archive"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/new-milestone", Name: "yaah/new-milestone",
+			Description: "Start a new version cycle with fresh goals",
+			Category:    CategoryWorkflow, Tags: []string{"milestone", "version", "planning"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/settings", Name: "yaah/settings",
+			Description: "View or update workflow configuration",
+			Category:    CategoryWorkflow, Tags: []string{"config", "settings", "workflow"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/add-phase", Name: "yaah/add-phase",
+			Description: "Add a new phase to the end of the roadmap",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "phase", "roadmap"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/insert-phase", Name: "yaah/insert-phase",
+			Description: "Insert an urgent phase between existing phases",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "phase", "roadmap"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/remove-phase", Name: "yaah/remove-phase",
+			Description: "Remove a future phase from the roadmap",
+			Category:    CategoryWorkflow, Tags: []string{"planning", "phase", "roadmap"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/health", Name: "yaah/health",
+			Description: "Validate planning directory integrity and consistency",
+			Category:    CategoryWorkflow, Tags: []string{"health", "validation", "integrity"},
+			Risk: RiskNone, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/progress", Name: "yaah/progress",
+			Description: "Show detailed project progress with metrics",
+			Category:    CategoryWorkflow, Tags: []string{"status", "progress", "metrics"},
+			Risk: RiskNone, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/review", Name: "yaah/review",
+			Description: "Structured code review of phase implementation",
+			Category:    CategoryWorkflow, Tags: []string{"code-review", "quality", "security"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/secure", Name: "yaah/secure",
+			Description: "Security threat modeling and vulnerability analysis for a phase",
+			Category:    CategorySecurity, Tags: []string{"security", "threat-model", "stride"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/todo", Name: "yaah/todo",
+			Description: "Capture, list, or complete quick todo items",
+			Category:    CategoryWorkflow, Tags: []string{"task", "todo", "capture"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/note", Name: "yaah/note",
+			Description: "Capture an idea or observation for later",
+			Category:    CategoryWorkflow, Tags: []string{"note", "idea", "capture"},
+			Risk: RiskNone, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/cleanup", Name: "yaah/cleanup",
+			Description: "Clean up temporary planning artifacts and state",
+			Category:    CategoryWorkflow, Tags: []string{"cleanup", "maintenance"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/forensics", Name: "yaah/forensics",
+			Description: "Investigate failed or stuck workflow runs",
+			Category:    CategoryWorkflow, Tags: []string{"debug", "forensics", "recovery"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/explore", Name: "yaah/explore",
+			Description: "Interactive codebase exploration and analysis",
+			Category:    CategoryWorkflow, Tags: []string{"exploration", "analysis", "codebase"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/scan", Name: "yaah/scan",
+			Description: "Scan codebase for patterns, issues, and improvement opportunities",
+			Category:    CategorySecurity, Tags: []string{"scan", "security", "quality", "dependencies"},
+			Risk: RiskSafe, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/import", Name: "yaah/import",
+			Description: "Import an existing project into the planning workflow",
+			Category:    CategoryWorkflow, Tags: []string{"import", "onboarding", "migration"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
+		},
+		{
+			ID: "yaah/autonomous", Name: "yaah/autonomous",
+			Description: "Run the full workflow autonomously for a phase",
+			Category:    CategoryWorkflow, Tags: []string{"autonomous", "automation", "workflow"},
+			Risk: RiskCritical, Tier: TierOfficial, Uses: "builtin", Repo: "yaah",
 		},
 
 		// pulumi/agent-skills — IaC authoring.
@@ -486,6 +662,16 @@ func defaultBundles() []Bundle {
 			ID: "architecture", Name: "Architecture",
 			Description: "System design, review, and critical thinking",
 			SkillIDs:    []string{"architecture-designer", "code-reviewer", "the-fool"},
+		},
+		{
+			ID: "workflow", Name: "Project Workflow",
+			Description: "Structured project lifecycle with 29 workflow commands",
+			SkillIDs: []string{
+				"yaah/init", "yaah/discuss", "yaah/plan", "yaah/execute", "yaah/verify", "yaah/docs", "yaah/next", "yaah/quick",
+				"yaah/ship", "yaah/pause", "yaah/resume", "yaah/complete-milestone", "yaah/new-milestone", "yaah/settings",
+				"yaah/add-phase", "yaah/insert-phase", "yaah/remove-phase", "yaah/health", "yaah/progress", "yaah/review",
+				"yaah/secure", "yaah/todo", "yaah/note", "yaah/cleanup", "yaah/forensics", "yaah/explore", "yaah/scan", "yaah/import", "yaah/autonomous",
+			},
 		},
 	}
 }

@@ -443,12 +443,11 @@ func (p *Harness) WriteAllForTarget(baseDir string, tw TargetWriter) error {
 	// Commands (skip if target doesn't support commands).
 	if commandsDir != "" {
 		for _, c := range p.commands.Commands() {
-			dir := filepath.Join(baseDir, commandsDir)
-			if err := os.MkdirAll(dir, 0o755); err != nil {
+			content := buildCommandMarkdown(c)
+			path := filepath.Join(baseDir, commandsDir, c.Name()+".md")
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 				return fmt.Errorf("create commands dir: %w", err)
 			}
-			content := buildCommandMarkdown(c)
-			path := filepath.Join(dir, c.Name()+".md")
 			if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 				return fmt.Errorf("write command %s: %w", c.Name(), err)
 			}

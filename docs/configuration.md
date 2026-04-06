@@ -129,6 +129,109 @@ yaah session clean                 # Remove sessions older than 7 days
 yaah version                       # Print version, commit, and build date
 ```
 
+## Workflow
+
+yaah includes a structured project workflow accessed through slash commands in your coding agent. The workflow manages state in a `.planning/` directory.
+
+### .planning/ directory structure
+
+```
+.planning/
+├── PROJECT.md              # Vision, goals, tech stack, constraints
+├── REQUIREMENTS.md         # v1/v2 scoped requirements with REQ-IDs
+├── ROADMAP.md              # Phases with scope, success criteria, status
+├── STATE.md                # Current position, decisions, progress metrics
+├── config.json             # Workflow settings (mode, granularity, model profile)
+├── research/               # Project-level research
+│   ├── stack.md
+│   ├── architecture.md
+│   └── pitfalls.md
+├── phases/                 # Per-phase artifacts
+│   └── {NN}-{slug}/
+│       ├── CONTEXT.md          # Implementation decisions
+│       ├── RESEARCH.md         # Phase-specific research
+│       ├── {NN}-{plan}-PLAN.md # Task plan with wave grouping
+│       ├── {NN}-{plan}-SUMMARY.md # Execution outcomes
+│       └── VERIFICATION.md     # Validation results
+├── quick/                  # Ad-hoc task records
+└── notes/                  # Idea captures
+```
+
+### Workflow commands
+
+29 commands organized by category. All run as subagents unless noted.
+
+**Core Workflow**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:init` | Onboard project, create `.planning/` | Yes |
+| `/yaah:discuss <N>` | Capture implementation decisions | Yes |
+| `/yaah:plan <N>` | Create wave-grouped plans | Yes |
+| `/yaah:execute <N>` | Run plans wave-by-wave | Yes |
+| `/yaah:verify [N]` | Three-level artifact validation | Yes |
+| `/yaah:docs` | Generate project documentation | Yes |
+| `/yaah:next` | Recommend next step | No (lightweight) |
+| `/yaah:quick <task>` | Execute without full planning | Yes |
+
+**Shipping & Milestones**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:ship` | Create PR from verified phase work | Yes |
+| `/yaah:complete-milestone` | Archive milestone, tag release, changelog | Yes |
+| `/yaah:new-milestone` | Start new version cycle with fresh goals | Yes |
+
+**Session Management**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:pause` | Save session state to HANDOFF.md | No |
+| `/yaah:resume` | Resume from previous session handoff | No |
+
+**Phase Management**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:add-phase` | Add phase to end of roadmap | No |
+| `/yaah:insert-phase` | Insert urgent phase between existing ones | No |
+| `/yaah:remove-phase` | Remove a future phase | No |
+
+**Quality & Security**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:review` | Structured code review of phase implementation | Yes |
+| `/yaah:secure` | STRIDE threat modeling and vulnerability analysis | Yes |
+| `/yaah:health` | Validate `.planning/` integrity and consistency | No |
+
+**Status & Capture**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:progress` | Detailed progress with metrics | No |
+| `/yaah:todo` | Capture, list, or complete todo items | No |
+| `/yaah:note` | Zero-friction idea capture | No |
+
+**Configuration**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:settings` | View or update workflow configuration | No |
+
+**Analysis & Advanced**
+
+| Command | Purpose | Subagent |
+|---------|---------|----------|
+| `/yaah:explore` | Interactive codebase exploration | Yes |
+| `/yaah:scan` | Scan for security, quality, dependency issues | Yes |
+| `/yaah:import` | Import existing project into planning workflow | Yes |
+| `/yaah:autonomous` | Run full workflow without human intervention | Yes |
+| `/yaah:forensics` | Investigate failed or stuck workflow runs | Yes |
+| `/yaah:cleanup` | Clean up temporary planning artifacts | No |
+
+See [Components](components.md#workflow-commands) for detailed documentation.
+
 ## Architecture
 
 yaah uses an interface + registry pattern. Each domain has an interface for individual components and a registry that holds them:

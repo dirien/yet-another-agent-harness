@@ -7,6 +7,7 @@ import (
 
 	agentpkg "github.com/dirien/yet-another-agent-harness/pkg/agents"
 	"github.com/dirien/yet-another-agent-harness/pkg/catalog"
+	cmdbuiltins "github.com/dirien/yet-another-agent-harness/pkg/commands/builtins"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks"
 	"github.com/dirien/yet-another-agent-harness/pkg/hooks/handlers"
 	lspproviders "github.com/dirien/yet-another-agent-harness/pkg/lsp/providers"
@@ -49,13 +50,13 @@ type DefaultOptions struct {
 	EnablePulumiARMMigrate       bool
 
 	// Remote skills — dirien/claude-skills
-	EnablePulumiTypeScript  bool
-	EnablePulumiGo          bool
-	EnablePulumiPython      bool
-	EnablePulumiNeo         bool
-	EnablePulumiCLI         bool
-	EnableFluxCLI           bool
-	EnableFluxOperatorCLI   bool
+	EnablePulumiTypeScript bool
+	EnablePulumiGo         bool
+	EnablePulumiPython     bool
+	EnablePulumiNeo        bool
+	EnablePulumiCLI        bool
+	EnableFluxCLI          bool
+	EnableFluxOperatorCLI  bool
 
 	// Remote skills — jeffallan/claude-skills
 	EnableGolangPro            bool
@@ -81,20 +82,20 @@ type DefaultOptions struct {
 	EnableAgentRules bool
 
 	// Remote skills — rshade/agent-skills
-	EnableAgentReadyGo    bool
-	EnableCommitlint      bool
-	EnableDecide          bool
-	EnableDepUpgrade      bool
+	EnableAgentReadyGo     bool
+	EnableCommitlint       bool
+	EnableDecide           bool
+	EnableDepUpgrade       bool
 	EnableDesignPrinciples bool
-	EnableGoNolintAudit   bool
-	EnableLintFix         bool
-	EnableMarkdownlint    bool
-	EnablePullRequestMsg  bool
-	EnableRoadmap         bool
-	EnableScout           bool
-	EnableSecurityAudit   bool
+	EnableGoNolintAudit    bool
+	EnableLintFix          bool
+	EnableMarkdownlint     bool
+	EnablePullRequestMsg   bool
+	EnableRoadmap          bool
+	EnableScout            bool
+	EnableSecurityAudit    bool
 	EnableTailscaleInstall bool
-	EnableTechDebt        bool
+	EnableTechDebt         bool
 
 	// Catalog-based skill selection (overrides individual Enable* flags for skills when set).
 	SkillIDs   []string // Register only these skills from the catalog.
@@ -110,10 +111,47 @@ type DefaultOptions struct {
 	EnableTypeScript bool
 	EnableCSharp     bool
 
+	// Workflow commands
+	EnableInitCommand              bool
+	EnableDiscussCommand           bool
+	EnablePlanCommand              bool
+	EnableExecuteCommand           bool
+	EnableVerifyCommand            bool
+	EnableDocsCommand              bool
+	EnableNextCommand              bool
+	EnableQuickCommand             bool
+	EnableShipCommand              bool
+	EnablePauseCommand             bool
+	EnableResumeCommand            bool
+	EnableCompleteMilestoneCommand bool
+	EnableNewMilestoneCommand      bool
+	EnableSettingsCommand          bool
+	EnableAddPhaseCommand          bool
+	EnableInsertPhaseCommand       bool
+	EnableRemovePhaseCommand       bool
+	EnableHealthCommand            bool
+	EnableProgressCommand          bool
+	EnableCodeReviewCommand        bool
+	EnableSecureCommand            bool
+	EnableTodoCommand              bool
+	EnableNoteCommand              bool
+	EnableCleanupCommand           bool
+	EnableForensicsCommand         bool
+	EnableExploreCommand           bool
+	EnableScanCommand              bool
+	EnableImportCommand            bool
+	EnableAutonomousCommand        bool
+
 	// Agents
 	EnableExecutor  bool
 	EnableLibrarian bool
 	EnableReviewer  bool
+
+	// Workflow agents
+	EnableResearcher bool
+	EnablePlanner    bool
+	EnableDocWriter  bool
+	EnableVerifier   bool
 
 	// Remote agents — msitarzewski/agency-agents
 	EnableAgencyAIEngineer             bool
@@ -165,8 +203,8 @@ func AllDefaults() DefaultOptions {
 		EnablePulumiPython:                 true,
 		EnablePulumiNeo:                    true,
 		EnablePulumiCLI:                    true,
-		EnableFluxCLI:                     true,
-		EnableFluxOperatorCLI:             true,
+		EnableFluxCLI:                      true,
+		EnableFluxOperatorCLI:              true,
 		EnableGolangPro:                    true,
 		EnableKubernetesSpecialist:         true,
 		EnableDevOpsEngineer:               true,
@@ -184,21 +222,50 @@ func AllDefaults() DefaultOptions {
 		EnableRustAsyncPatterns:            true,
 		EnableRustEngineer:                 true,
 		EnableAgentRules:                   true,
-		EnableAgentReadyGo:                true,
-		EnableCommitlint:                  true,
-		EnableDecide:                      true,
-		EnableDepUpgrade:                  true,
-		EnableDesignPrinciples:            true,
-		EnableGoNolintAudit:               true,
-		EnableLintFix:                     true,
-		EnableMarkdownlint:                true,
-		EnablePullRequestMsg:              true,
-		EnableRoadmap:                     true,
-		EnableScout:                       true,
-		EnableSecurityAudit:               true,
-		EnableTailscaleInstall:            true,
-		EnableTechDebt:                    true,
-		EnableCodexPlugin:                 true,
+		EnableAgentReadyGo:                 true,
+		EnableCommitlint:                   true,
+		EnableDecide:                       true,
+		EnableDepUpgrade:                   true,
+		EnableDesignPrinciples:             true,
+		EnableGoNolintAudit:                true,
+		EnableLintFix:                      true,
+		EnableMarkdownlint:                 true,
+		EnablePullRequestMsg:               true,
+		EnableRoadmap:                      true,
+		EnableScout:                        true,
+		EnableSecurityAudit:                true,
+		EnableTailscaleInstall:             true,
+		EnableTechDebt:                     true,
+		EnableInitCommand:                  true,
+		EnableDiscussCommand:               true,
+		EnablePlanCommand:                  true,
+		EnableExecuteCommand:               true,
+		EnableVerifyCommand:                true,
+		EnableDocsCommand:                  true,
+		EnableNextCommand:                  true,
+		EnableQuickCommand:                 true,
+		EnableShipCommand:                  true,
+		EnablePauseCommand:                 true,
+		EnableResumeCommand:                true,
+		EnableCompleteMilestoneCommand:     true,
+		EnableNewMilestoneCommand:          true,
+		EnableSettingsCommand:              true,
+		EnableAddPhaseCommand:              true,
+		EnableInsertPhaseCommand:           true,
+		EnableRemovePhaseCommand:           true,
+		EnableHealthCommand:                true,
+		EnableProgressCommand:              true,
+		EnableCodeReviewCommand:            true,
+		EnableSecureCommand:                true,
+		EnableTodoCommand:                  true,
+		EnableNoteCommand:                  true,
+		EnableCleanupCommand:               true,
+		EnableForensicsCommand:             true,
+		EnableExploreCommand:               true,
+		EnableScanCommand:                  true,
+		EnableImportCommand:                true,
+		EnableAutonomousCommand:            true,
+		EnableCodexPlugin:                  true,
 		EnableGopls:                        true,
 		EnablePyright:                      true,
 		EnableTypeScript:                   true,
@@ -206,6 +273,10 @@ func AllDefaults() DefaultOptions {
 		EnableExecutor:                     true,
 		EnableLibrarian:                    true,
 		EnableReviewer:                     true,
+		EnableResearcher:                   true,
+		EnablePlanner:                      true,
+		EnableDocWriter:                    true,
+		EnableVerifier:                     true,
 		EnableAgencyAIEngineer:             true,
 		EnableAgencyBackendArchitect:       true,
 		EnableAgencySecurityEngineer:       true,
@@ -273,6 +344,95 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 	if opts.NotionToken != "" {
 		p.MCP().Register(mcpproviders.NewNotion(opts.NotionToken))
+	}
+
+	// Workflow commands.
+	if opts.EnableInitCommand {
+		p.Commands().Register(cmdbuiltins.NewInitCommand())
+	}
+	if opts.EnableDiscussCommand {
+		p.Commands().Register(cmdbuiltins.NewDiscussCommand())
+	}
+	if opts.EnablePlanCommand {
+		p.Commands().Register(cmdbuiltins.NewPlanCommand())
+	}
+	if opts.EnableExecuteCommand {
+		p.Commands().Register(cmdbuiltins.NewExecuteCommand())
+	}
+	if opts.EnableVerifyCommand {
+		p.Commands().Register(cmdbuiltins.NewVerifyCommand())
+	}
+	if opts.EnableDocsCommand {
+		p.Commands().Register(cmdbuiltins.NewDocsCommand())
+	}
+	if opts.EnableNextCommand {
+		p.Commands().Register(cmdbuiltins.NewNextCommand())
+	}
+	if opts.EnableQuickCommand {
+		p.Commands().Register(cmdbuiltins.NewQuickCommand())
+	}
+	if opts.EnableShipCommand {
+		p.Commands().Register(cmdbuiltins.NewShipCommand())
+	}
+	if opts.EnablePauseCommand {
+		p.Commands().Register(cmdbuiltins.NewPauseCommand())
+	}
+	if opts.EnableResumeCommand {
+		p.Commands().Register(cmdbuiltins.NewResumeCommand())
+	}
+	if opts.EnableCompleteMilestoneCommand {
+		p.Commands().Register(cmdbuiltins.NewCompleteMilestoneCommand())
+	}
+	if opts.EnableNewMilestoneCommand {
+		p.Commands().Register(cmdbuiltins.NewNewMilestoneCommand())
+	}
+	if opts.EnableSettingsCommand {
+		p.Commands().Register(cmdbuiltins.NewSettingsCommand())
+	}
+	if opts.EnableAddPhaseCommand {
+		p.Commands().Register(cmdbuiltins.NewAddPhaseCommand())
+	}
+	if opts.EnableInsertPhaseCommand {
+		p.Commands().Register(cmdbuiltins.NewInsertPhaseCommand())
+	}
+	if opts.EnableRemovePhaseCommand {
+		p.Commands().Register(cmdbuiltins.NewRemovePhaseCommand())
+	}
+	if opts.EnableHealthCommand {
+		p.Commands().Register(cmdbuiltins.NewHealthCommand())
+	}
+	if opts.EnableProgressCommand {
+		p.Commands().Register(cmdbuiltins.NewProgressCommand())
+	}
+	if opts.EnableCodeReviewCommand {
+		p.Commands().Register(cmdbuiltins.NewCodeReviewCommand())
+	}
+	if opts.EnableSecureCommand {
+		p.Commands().Register(cmdbuiltins.NewSecureCommand())
+	}
+	if opts.EnableTodoCommand {
+		p.Commands().Register(cmdbuiltins.NewTodoCommand())
+	}
+	if opts.EnableNoteCommand {
+		p.Commands().Register(cmdbuiltins.NewNoteCommand())
+	}
+	if opts.EnableCleanupCommand {
+		p.Commands().Register(cmdbuiltins.NewCleanupCommand())
+	}
+	if opts.EnableForensicsCommand {
+		p.Commands().Register(cmdbuiltins.NewForensicsCommand())
+	}
+	if opts.EnableExploreCommand {
+		p.Commands().Register(cmdbuiltins.NewExploreCommand())
+	}
+	if opts.EnableScanCommand {
+		p.Commands().Register(cmdbuiltins.NewScanCommand())
+	}
+	if opts.EnableImportCommand {
+		p.Commands().Register(cmdbuiltins.NewImportCommand())
+	}
+	if opts.EnableAutonomousCommand {
+		p.Commands().Register(cmdbuiltins.NewAutonomousCommand())
 	}
 
 	// Skills.
@@ -605,6 +765,20 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 		p.Agents().Register(agentpkg.NewReviewer())
 	}
 
+	// Workflow agents.
+	if opts.EnableResearcher {
+		p.Agents().Register(agentpkg.NewResearcher())
+	}
+	if opts.EnablePlanner {
+		p.Agents().Register(agentpkg.NewPlanner())
+	}
+	if opts.EnableDocWriter {
+		p.Agents().Register(agentpkg.NewDocWriter())
+	}
+	if opts.EnableVerifier {
+		p.Agents().Register(agentpkg.NewVerifier())
+	}
+
 	// Remote agents — msitarzewski/agency-agents
 	const agencyAgentsRef = "github.com/msitarzewski/agency-agents@6254154899f510eb4a4de10561fecfc1f32ff17f"
 	if opts.EnableAgencyAIEngineer {
@@ -732,6 +906,95 @@ func NewFromCatalog(opts DefaultOptions) *Harness {
 		p.MCP().Register(mcpproviders.NewNotion(opts.NotionToken))
 	}
 
+	// Workflow commands.
+	if opts.EnableInitCommand {
+		p.Commands().Register(cmdbuiltins.NewInitCommand())
+	}
+	if opts.EnableDiscussCommand {
+		p.Commands().Register(cmdbuiltins.NewDiscussCommand())
+	}
+	if opts.EnablePlanCommand {
+		p.Commands().Register(cmdbuiltins.NewPlanCommand())
+	}
+	if opts.EnableExecuteCommand {
+		p.Commands().Register(cmdbuiltins.NewExecuteCommand())
+	}
+	if opts.EnableVerifyCommand {
+		p.Commands().Register(cmdbuiltins.NewVerifyCommand())
+	}
+	if opts.EnableDocsCommand {
+		p.Commands().Register(cmdbuiltins.NewDocsCommand())
+	}
+	if opts.EnableNextCommand {
+		p.Commands().Register(cmdbuiltins.NewNextCommand())
+	}
+	if opts.EnableQuickCommand {
+		p.Commands().Register(cmdbuiltins.NewQuickCommand())
+	}
+	if opts.EnableShipCommand {
+		p.Commands().Register(cmdbuiltins.NewShipCommand())
+	}
+	if opts.EnablePauseCommand {
+		p.Commands().Register(cmdbuiltins.NewPauseCommand())
+	}
+	if opts.EnableResumeCommand {
+		p.Commands().Register(cmdbuiltins.NewResumeCommand())
+	}
+	if opts.EnableCompleteMilestoneCommand {
+		p.Commands().Register(cmdbuiltins.NewCompleteMilestoneCommand())
+	}
+	if opts.EnableNewMilestoneCommand {
+		p.Commands().Register(cmdbuiltins.NewNewMilestoneCommand())
+	}
+	if opts.EnableSettingsCommand {
+		p.Commands().Register(cmdbuiltins.NewSettingsCommand())
+	}
+	if opts.EnableAddPhaseCommand {
+		p.Commands().Register(cmdbuiltins.NewAddPhaseCommand())
+	}
+	if opts.EnableInsertPhaseCommand {
+		p.Commands().Register(cmdbuiltins.NewInsertPhaseCommand())
+	}
+	if opts.EnableRemovePhaseCommand {
+		p.Commands().Register(cmdbuiltins.NewRemovePhaseCommand())
+	}
+	if opts.EnableHealthCommand {
+		p.Commands().Register(cmdbuiltins.NewHealthCommand())
+	}
+	if opts.EnableProgressCommand {
+		p.Commands().Register(cmdbuiltins.NewProgressCommand())
+	}
+	if opts.EnableCodeReviewCommand {
+		p.Commands().Register(cmdbuiltins.NewCodeReviewCommand())
+	}
+	if opts.EnableSecureCommand {
+		p.Commands().Register(cmdbuiltins.NewSecureCommand())
+	}
+	if opts.EnableTodoCommand {
+		p.Commands().Register(cmdbuiltins.NewTodoCommand())
+	}
+	if opts.EnableNoteCommand {
+		p.Commands().Register(cmdbuiltins.NewNoteCommand())
+	}
+	if opts.EnableCleanupCommand {
+		p.Commands().Register(cmdbuiltins.NewCleanupCommand())
+	}
+	if opts.EnableForensicsCommand {
+		p.Commands().Register(cmdbuiltins.NewForensicsCommand())
+	}
+	if opts.EnableExploreCommand {
+		p.Commands().Register(cmdbuiltins.NewExploreCommand())
+	}
+	if opts.EnableScanCommand {
+		p.Commands().Register(cmdbuiltins.NewScanCommand())
+	}
+	if opts.EnableImportCommand {
+		p.Commands().Register(cmdbuiltins.NewImportCommand())
+	}
+	if opts.EnableAutonomousCommand {
+		p.Commands().Register(cmdbuiltins.NewAutonomousCommand())
+	}
+
 	// Skills — catalog-based.
 	cat := catalog.DefaultCatalog()
 	wanted := resolveSkillIDs(cat, opts.SkillIDs, opts.BundleIDs, opts.ExcludeIDs)
@@ -793,6 +1056,20 @@ func NewFromCatalog(opts DefaultOptions) *Harness {
 	}
 	if opts.EnableReviewer {
 		p.Agents().Register(agentpkg.NewReviewer())
+	}
+
+	// Workflow agents.
+	if opts.EnableResearcher {
+		p.Agents().Register(agentpkg.NewResearcher())
+	}
+	if opts.EnablePlanner {
+		p.Agents().Register(agentpkg.NewPlanner())
+	}
+	if opts.EnableDocWriter {
+		p.Agents().Register(agentpkg.NewDocWriter())
+	}
+	if opts.EnableVerifier {
+		p.Agents().Register(agentpkg.NewVerifier())
 	}
 
 	const agencyCatalogRef = "github.com/msitarzewski/agency-agents@6254154899f510eb4a4de10561fecfc1f32ff17f"

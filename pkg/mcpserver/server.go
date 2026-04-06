@@ -46,4 +46,6 @@ func (s *Server) registerTools() {
 	s.addCheckCommandTool()
 	s.addDoctorTool()
 	s.addSessionInfoTool()
+	s.addPlanningStatusTool()
+	s.addPlanningInitTool()
 }
