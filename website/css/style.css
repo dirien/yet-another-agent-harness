@@ -542,6 +542,8 @@ section:nth-child(even) {
   color: var(--text-secondary);
   text-align: left;
   overflow-x: auto;
+  white-space: pre;
+  line-height: 1.6;
 }
 
 .step-code .kw {
