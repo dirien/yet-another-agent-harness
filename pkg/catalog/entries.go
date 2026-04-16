@@ -2,13 +2,13 @@ package catalog
 
 const (
 	// Remote refs pinned to specific commits.
-	pulumiAgentSkillsRef     = "github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4"
-	dirienClaudeSkillsRef    = "github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5"
-	jeffallanClaudeSkillsRef = "github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a"
-	apolloSkillsRef          = "github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc"
-	wshobsonAgentsRef        = "github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11"
+	pulumiAgentSkillsRef     = "github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71"
+	dirienClaudeSkillsRef    = "github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a"
+	jeffallanClaudeSkillsRef = "github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65"
+	apolloSkillsRef          = "github.com/apollographql/skills@ad83e824c65465b81898622f5f33c0aa1c1b187a"
+	wshobsonAgentsRef        = "github.com/wshobson/agents@87b81e9d642d7bb9602b33d1e2dadf1c2a619f2b"
 	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@9b67bf594a52b1a7d38d8b0ec0a076a31f8d3d7e"
-	rshadeAgentSkillsRef     = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
+	rshadeAgentSkillsRef     = "github.com/rshade/agent-skills@202393300c0d22a6a10c93a2fa46e33ac54238a3"
 )
 
 // DefaultCatalog returns the complete catalog of all built-in and remote skills with bundles.
