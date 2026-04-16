@@ -287,7 +287,7 @@ func AllDefaults() DefaultOptions {
 		EnableAgencyAPITester:              true,
 		EnableAgencyPerformanceBenchmarker: true,
 		Settings: &schema.Settings{
-			Model:                 "opus[1m]",
+			Model:                 "claude-opus-4-7[1m]",
 			AlwaysThinkingEnabled: &thinking,
 			EffortLevel:           "high",
 			AutoUpdatesChannel:    "latest",
@@ -450,49 +450,49 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnablePulumiBestPractices {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-best-practices", "Pulumi best practices for reliable programs",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-best-practices/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "authoring/skills/pulumi-best-practices/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiComponent {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-component", "Pulumi ComponentResource authoring",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-component/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "authoring/skills/pulumi-component/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiAutomationAPI {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-automation-api", "Pulumi Automation API best practices",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-automation-api/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "authoring/skills/pulumi-automation-api/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiESC {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-esc", "Pulumi ESC environments, secrets, and configuration",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "authoring/skills/pulumi-esc/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "authoring/skills/pulumi-esc/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiTerraformMigrate {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-terraform-to-pulumi", "Convert Terraform to Pulumi",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/pulumi-terraform-to-pulumi/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "migration/skills/pulumi-terraform-to-pulumi/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiCDKMigrate {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-cdk-to-pulumi", "Convert AWS CDK to Pulumi",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/pulumi-cdk-to-pulumi/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "migration/skills/pulumi-cdk-to-pulumi/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiCFNMigrate {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"cloudformation-to-pulumi", "Convert CloudFormation to Pulumi",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/cloudformation-to-pulumi/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "migration/skills/cloudformation-to-pulumi/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiARMMigrate {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-arm-to-pulumi", "Convert Azure ARM/Bicep to Pulumi",
-			"github.com/pulumi/agent-skills@b6b942fc6e34517e2bbc52d6db04ca529baf3ad4", "migration/skills/pulumi-arm-to-pulumi/SKILL.md",
+			"github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71", "migration/skills/pulumi-arm-to-pulumi/SKILL.md",
 		))
 	}
 
@@ -500,43 +500,43 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnablePulumiTypeScript {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-typescript", "Pulumi TypeScript IaC with ESC and OIDC",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-typescript/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "pulumi-typescript/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiGo {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-go", "Pulumi Go IaC with ESC and OIDC",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-go/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "pulumi-go/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiPython {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-python", "Pulumi Python IaC with ESC and OIDC",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-python/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "pulumi-python/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiNeo {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-neo", "Pulumi Neo conversational infrastructure management",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-neo/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "pulumi-neo/SKILL.md",
 		))
 	}
 	if opts.EnablePulumiCLI {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"pulumi-cli", "Pulumi CLI command reference for deployments",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "pulumi-cli/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "pulumi-cli/SKILL.md",
 		))
 	}
 	if opts.EnableFluxCLI {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"flux-cli", "GitOps for Kubernetes using Flux CD CLI",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "flux-cli/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "flux-cli/SKILL.md",
 		))
 	}
 	if opts.EnableFluxOperatorCLI {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"flux-operator-cli", "Flux Operator CLI for managing Flux CD deployments on Kubernetes",
-			"github.com/dirien/claude-skills@85b0ee2a07cb1e3420d445d3f2336eadca45cde5", "flux-operator-cli/SKILL.md",
+			"github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a", "flux-operator-cli/SKILL.md",
 		))
 	}
 
@@ -544,79 +544,79 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnableGolangPro {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"golang-pro", "Go concurrent patterns, microservices, gRPC, and performance optimization",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/golang-pro/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/golang-pro/SKILL.md",
 		))
 	}
 	if opts.EnableKubernetesSpecialist {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"kubernetes-specialist", "Kubernetes deployments, Helm, RBAC, NetworkPolicies, and multi-cluster",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/kubernetes-specialist/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/kubernetes-specialist/SKILL.md",
 		))
 	}
 	if opts.EnableDevOpsEngineer {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"devops-engineer", "CI/CD pipelines, Docker, Kubernetes, Terraform, and GitOps",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/devops-engineer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/devops-engineer/SKILL.md",
 		))
 	}
 	if opts.EnablePythonPro {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"python-pro", "Python 3.11+ with type safety, async, pytest, and ruff",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/python-pro/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/python-pro/SKILL.md",
 		))
 	}
 	if opts.EnableTypeScriptPro {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"typescript-pro", "Advanced TypeScript types, generics, tRPC, and monorepo setup",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/typescript-pro/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/typescript-pro/SKILL.md",
 		))
 	}
 	if opts.EnableCSharpDeveloper {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"csharp-developer", "C# .NET 8+, ASP.NET Core, Blazor, EF Core, and MediatR",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/csharp-developer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/csharp-developer/SKILL.md",
 		))
 	}
 	if opts.EnableJavaScriptPro {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"javascript-pro", "Modern ES2023+ JavaScript, async/await, ESM, and Node.js",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/javascript-pro/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/javascript-pro/SKILL.md",
 		))
 	}
 	if opts.EnableCLIDeveloper {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"cli-developer", "CLI tools with argument parsing, completions, and cross-platform support",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/cli-developer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/cli-developer/SKILL.md",
 		))
 	}
 	if opts.EnableSREEngineer {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"sre-engineer", "SLOs, error budgets, incident response, and capacity planning",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/sre-engineer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/sre-engineer/SKILL.md",
 		))
 	}
 	if opts.EnableTheFool {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"the-fool", "Devil's advocate, pre-mortems, red teaming, and assumption auditing",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/the-fool/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/the-fool/SKILL.md",
 		))
 	}
 	if opts.EnableArchitectureDesigner {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"architecture-designer", "System architecture, ADRs, trade-offs, and scalability planning",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/architecture-designer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/architecture-designer/SKILL.md",
 		))
 	}
 	if opts.EnableSpringBootEngineer {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"spring-boot-engineer", "Spring Boot 3.x, Spring Security 6, JPA, WebFlux, and Spring Cloud",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/spring-boot-engineer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/spring-boot-engineer/SKILL.md",
 		))
 	}
 	if opts.EnableCodeReviewer {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"code-reviewer", "Code review for bugs, security, performance, and maintainability",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/code-reviewer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/code-reviewer/SKILL.md",
 		))
 	}
 
@@ -624,19 +624,19 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnableRustBestPractices {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"rust-best-practices", "Idiomatic Rust code, borrowing, error handling, and performance optimization",
-			"github.com/apollographql/skills@e1979d2f1e7c38cef58753b2bfd6fc9509101bdc", "skills/rust-best-practices/SKILL.md",
+			"github.com/apollographql/skills@ad83e824c65465b81898622f5f33c0aa1c1b187a", "skills/rust-best-practices/SKILL.md",
 		))
 	}
 	if opts.EnableRustAsyncPatterns {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"rust-async-patterns", "Rust async programming with Tokio, async traits, and concurrent patterns",
-			"github.com/wshobson/agents@1ad2f007d5e9ec822a2d79e727ac1dcdf5f66f11", "plugins/systems-programming/skills/rust-async-patterns/SKILL.md",
+			"github.com/wshobson/agents@87b81e9d642d7bb9602b33d1e2dadf1c2a619f2b", "plugins/systems-programming/skills/rust-async-patterns/SKILL.md",
 		))
 	}
 	if opts.EnableRustEngineer {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"rust-engineer", "Idiomatic Rust with ownership, lifetimes, traits, tokio, and error handling",
-			"github.com/jeffallan/claude-skills@3bf9a24b76a7c122f1fc05e83929fbc84e1c207a", "skills/rust-engineer/SKILL.md",
+			"github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65", "skills/rust-engineer/SKILL.md",
 		))
 	}
 
@@ -649,7 +649,7 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 
 	// Remote skills — rshade/agent-skills
-	const rshadeRef = "github.com/rshade/agent-skills@4aff11fe89bb156337c2c7c303bb2db234cc9740"
+	const rshadeRef = "github.com/rshade/agent-skills@202393300c0d22a6a10c93a2fa46e33ac54238a3"
 	if opts.EnableAgentReadyGo {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"agent-ready-go", "Prepare Go apps for AI agent interaction with structured logging and CLI design",
@@ -780,7 +780,7 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 
 	// Remote agents — msitarzewski/agency-agents
-	const agencyAgentsRef = "github.com/msitarzewski/agency-agents@6254154899f510eb4a4de10561fecfc1f32ff17f"
+	const agencyAgentsRef = "github.com/msitarzewski/agency-agents@783f6a72bfd7f3135700ac273c619d92821b419a"
 	if opts.EnableAgencyAIEngineer {
 		p.Agents().Register(agentpkg.NewRemoteAgent(
 			"agency-ai-engineer", "AI/ML engineering, model integration, LLM pipelines, and AI system design",
@@ -1072,7 +1072,7 @@ func NewFromCatalog(opts DefaultOptions) *Harness {
 		p.Agents().Register(agentpkg.NewVerifier())
 	}
 
-	const agencyCatalogRef = "github.com/msitarzewski/agency-agents@6254154899f510eb4a4de10561fecfc1f32ff17f"
+	const agencyCatalogRef = "github.com/msitarzewski/agency-agents@783f6a72bfd7f3135700ac273c619d92821b419a"
 	if opts.EnableAgencyAIEngineer {
 		p.Agents().Register(agentpkg.NewRemoteAgent(
 			"agency-ai-engineer", "AI/ML engineering, model integration, LLM pipelines, and AI system design",
