@@ -2,12 +2,12 @@ package catalog
 
 const (
 	// Remote refs pinned to specific commits.
-	pulumiAgentSkillsRef     = "github.com/pulumi/agent-skills@fbeac07327a601b954ba82e7f7e1c24cf3b1fa71"
+	pulumiAgentSkillsRef     = "github.com/pulumi/agent-skills@f810e5000b5881ec41ea9c33c001ac8c25cbd2f2"
 	dirienClaudeSkillsRef    = "github.com/dirien/claude-skills@22aaf94d59d53c88a5465bcb5434d309fae8787a"
-	jeffallanClaudeSkillsRef = "github.com/jeffallan/claude-skills@5b761018cebd430edcecbeeb46bdde6150d22c65"
-	apolloSkillsRef          = "github.com/apollographql/skills@ad83e824c65465b81898622f5f33c0aa1c1b187a"
-	wshobsonAgentsRef        = "github.com/wshobson/agents@87b81e9d642d7bb9602b33d1e2dadf1c2a619f2b"
-	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@9b67bf594a52b1a7d38d8b0ec0a076a31f8d3d7e"
+	jeffallanClaudeSkillsRef = "github.com/jeffallan/claude-skills@e8be415bc94d8d6ebddc2fb50e5d03c6e27d4319"
+	apolloSkillsRef          = "github.com/apollographql/skills@64d4087d629e413da1bac780abeaefd653847440"
+	wshobsonAgentsRef        = "github.com/wshobson/agents@4bb47e9eeb4e8564642eb23384ec8f7bf1855417"
+	netresearchAgentRulesRef = "github.com/netresearch/agent-rules-skill@c8196b1bb9821ca3950639263af6d44cadf6caa1"
 	rshadeAgentSkillsRef     = "github.com/rshade/agent-skills@202393300c0d22a6a10c93a2fa46e33ac54238a3"
 )
 
