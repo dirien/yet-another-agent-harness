@@ -76,6 +76,20 @@ Writes session start/stop events with timestamps to a log file.
 h.Hooks().Register(handlers.NewSessionLogger("/var/log/claude-sessions"))
 ```
 
+### FactCheck (experimental)
+
+Installs `agent`-type `Stop` and `SubagentStop` hooks that spawn a Sonnet subagent with `Read`/`Grep`/`Glob`/`WebFetch` to verify cited resources in the assistant's final message (file paths exist, function names resolve, URLs return successfully). When a citation cannot be confirmed the runtime surfaces the failure as feedback on the next turn.
+
+```go
+opts := harness.AllDefaults()
+opts.EnableFactCheckHooks = true   // experimental — agent hooks are marked experimental upstream
+h := harness.NewWithDefaults(opts)
+```
+
+For CLI users, set `YAAH_EXPERIMENTAL_FACT_CHECK=1` and re-run `yaah generate`. Default state installs no fact-check hooks; users opt in explicitly. Higher latency and cost than command/prompt hooks — each Stop spawns a tool-using subagent.
+
+Configure the hook directly without enabling the default via `Harness.AddHookRule` for full control over model, timeout, and prompt phrasing.
+
 ### Middleware chains
 
 Chain multiple handlers into a sequential pipeline. Each link receives the previous link's result, enabling composed workflows like "scan for secrets, then suggest remediation if blocked."

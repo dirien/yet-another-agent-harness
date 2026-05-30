@@ -26,7 +26,7 @@ type Settings struct {
 	Model                 string            `json:"model,omitempty"                        jsonschema:"description=Default model (opus/sonnet/haiku)"`
 	AlwaysThinkingEnabled *bool             `json:"alwaysThinkingEnabled,omitempty"        jsonschema:"description=Enable extended thinking"`
 	AutoUpdatesChannel    string            `json:"autoUpdatesChannel,omitempty"           jsonschema:"description=Update channel (latest/stable)"`
-	EffortLevel           string            `json:"effortLevel,omitempty"                  jsonschema:"description=Reasoning effort (low/medium/high),enum=low,enum=medium,enum=high"`
+	EffortLevel           string            `json:"effortLevel,omitempty"                  jsonschema:"description=Reasoning effort (low/medium/high/xhigh/max),enum=low,enum=medium,enum=high,enum=xhigh,enum=max"`
 	StatusLine            *StatusLine       `json:"statusLine,omitempty"                   jsonschema:"description=Status line configuration"`
 	Env                   map[string]string `json:"env,omitempty"                          jsonschema:"description=Environment variables for Claude Code"`
 	TeammateMode          string            `json:"teammateMode,omitempty"                 jsonschema:"description=Agent team mode (tmux/etc)"`

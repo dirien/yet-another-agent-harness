@@ -26,7 +26,12 @@ type DefaultOptions struct {
 	EnableSecretScanner     bool
 	EnableSecretRemediation bool
 	EnableSessionLogger     bool
-	LintProfiles            []handlers.Profile
+	// EnableFactCheckHooks installs agent-type Stop/SubagentStop hooks that
+	// spawn a Sonnet subagent with Read/Grep/Glob/WebFetch to verify cited
+	// resources in the final message. EXPERIMENTAL — Claude Code marks "agent"
+	// hooks as experimental and the contract may change.
+	EnableFactCheckHooks bool
+	LintProfiles         []handlers.Profile
 
 	// Providers (MCP)
 	EnableContext7  bool
@@ -287,12 +292,43 @@ func AllDefaults() DefaultOptions {
 		EnableAgencyAPITester:              true,
 		EnableAgencyPerformanceBenchmarker: true,
 		Settings: &schema.Settings{
-			Model:                 "claude-opus-4-7[1m]",
+			Model:                 "claude-opus-4-8[1m]",
 			AlwaysThinkingEnabled: &thinking,
-			EffortLevel:           "high",
+			EffortLevel:           "max",
 			AutoUpdatesChannel:    "latest",
 		},
 	}
+}
+
+// Fact-check prompts installed on Stop/SubagentStop hooks when
+// EnableFactCheckHooks is set. A FAIL verdict blocks the stop and forces
+// Claude (or the subagent) to revise.
+// Agent-type hooks spawn a subagent with Read/Grep/Glob/WebFetch tools to
+// verify cited resources by inspection rather than judging plausibility from
+// training data. Phrased as a declarative condition the agent must confirm.
+// See: https://code.claude.com/docs/en/hooks
+const factCheckAgentCondition = "Every file path, function or symbol name, command-line flag, " +
+	"and URL cited in the assistant's final message can be confirmed to exist by using the " +
+	"available tools: use Read to open cited file paths, Grep/Glob to confirm cited symbols " +
+	"and flags appear in the codebase, and WebFetch to verify cited URLs return successfully. " +
+	"Treat opinions, instructional guidance, hedged language, and meta-commentary as compliant. " +
+	"Only fail when a concrete citation cannot be confirmed by the tools."
+
+// registerFactCheckHooks installs agent-type Stop and SubagentStop hooks that
+// spawn a tool-using subagent to verify cited resources. EXPERIMENTAL —
+// "agent" hooks are marked experimental upstream; latency and cost are higher
+// than command-only hooks.
+func registerFactCheckHooks(p *Harness) {
+	rule := schema.HookRule{
+		Hooks: []schema.HookHandler{{
+			Type:    schema.HookTypeAgent,
+			Prompt:  factCheckAgentCondition,
+			Model:   "claude-sonnet-4-6",
+			Timeout: 60,
+		}},
+	}
+	p.AddHookRule(schema.HookStop, rule)
+	p.AddHookRule(schema.HookSubagentStop, rule)
 }
 
 // NewWithDefaults creates a Harness pre-loaded with built-in components.
@@ -330,6 +366,9 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	}
 	if opts.EnableSessionLogger {
 		p.Hooks().Register(handlers.NewSessionLogger(""))
+	}
+	if opts.EnableFactCheckHooks {
+		registerFactCheckHooks(p)
 	}
 
 	// Providers.
@@ -644,7 +683,7 @@ func NewWithDefaults(opts DefaultOptions) *Harness {
 	if opts.EnableAgentRules {
 		p.Skills().Register(skills.NewRemoteSkill(
 			"agent-rules", "Generate and maintain AGENTS.md files following the agents.md convention",
-			"github.com/netresearch/agent-rules-skill@c8196b1bb9821ca3950639263af6d44cadf6caa1", "skills/agent-rules/SKILL.md",
+			"github.com/netresearch/agent-rules-skill@1d739213f18eca7af0f081a36bd02f10c7bc2b7c", "skills/agent-rules/SKILL.md",
 		))
 	}
 
@@ -890,6 +929,9 @@ func NewFromCatalog(opts DefaultOptions) *Harness {
 	}
 	if opts.EnableSessionLogger {
 		p.Hooks().Register(handlers.NewSessionLogger(""))
+	}
+	if opts.EnableFactCheckHooks {
+		registerFactCheckHooks(p)
 	}
 
 	// Providers — same as NewWithDefaults.

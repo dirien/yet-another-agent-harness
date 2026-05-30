@@ -88,7 +88,7 @@ Run it with `go run ./cmd/your-setup/` whenever you change your config.
 
 | Group                    | Fields                                                                                                                                                                       |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Core                     | `model`, `alwaysThinkingEnabled`, `autoUpdatesChannel`, `effortLevel`, `statusLine`, `env`, `teammateMode`                                                                   |
+| Core                     | `model`, `alwaysThinkingEnabled`, `autoUpdatesChannel`, `effortLevel` (`low`/`medium`/`high`/`xhigh`/`max`), `statusLine`, `env`, `teammateMode`                             |
 | Model and performance    | `availableModels`, `fastMode`, `fastModePerSessionOptIn`                                                                                                                     |
 | Permissions and security | `permissions`, `sandbox`, `allowManagedPermissionRulesOnly`                                                                                                                  |
 | Hooks and automation     | `disableAllHooks`, `allowManagedHooksOnly`                                                                                                                                   |
@@ -128,6 +128,12 @@ yaah session show <id>             # Show full details for a session
 yaah session clean                 # Remove sessions older than 7 days
 yaah version                       # Print version, commit, and build date
 ```
+
+### Experimental opt-ins
+
+| Environment variable             | Effect                                                                                                                                                          |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `YAAH_EXPERIMENTAL_FACT_CHECK=1` | Install `agent`-type `Stop`/`SubagentStop` hooks that spawn a Sonnet subagent with `Read`/`Grep`/`Glob`/`WebFetch` to verify cited resources in the final message. |
 
 ## Workflow
 

@@ -34,8 +34,20 @@ var (
 
 // newHarness creates the default Harness with all built-in handlers.
 // In a consumer repo, you'd replace this with your own setup.
+//
+// Experimental opt-ins via environment:
+//
+//	YAAH_EXPERIMENTAL_FACT_CHECK=1
+//	    Install agent-type Stop/SubagentStop hooks that spawn a Sonnet
+//	    subagent with Read/Grep/Glob/WebFetch to verify cited resources
+//	    in the final message. Agent hooks are marked experimental upstream;
+//	    expect added latency and cost.
 func newHarness() *harnesspkg.Harness {
-	return harnesspkg.NewWithDefaults(harnesspkg.AllDefaults())
+	opts := harnesspkg.AllDefaults()
+	if os.Getenv("YAAH_EXPERIMENTAL_FACT_CHECK") != "" {
+		opts.EnableFactCheckHooks = true
+	}
+	return harnesspkg.NewWithDefaults(opts)
 }
 
 func main() {
