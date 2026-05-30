@@ -5,7 +5,7 @@ license: "(MIT AND CC-BY-SA-4.0). See LICENSE-MIT and LICENSE-CC-BY-SA-4.0"
 compatibility: "Requires bash 4.3+, jq 1.5+, git 2.0+."
 metadata:
   author: Netresearch DTT GmbH
-  version: "3.7.0"
+  version: "3.11.0"
   repository: https://github.com/netresearch/agent-rules-skill
 allowed-tools: Bash(git:*) Bash(jq:*) Bash(grep:*) Bash(find:*) Bash(bash:*) Read Glob Grep
 ---
@@ -66,6 +66,8 @@ Use `--update` to preserve human-curated content outside `<!-- GENERATED -->` ma
 | [`output-structure.md`](references/output-structure.md) | Root/scoped sections |
 | [`git-hooks-setup.md`](references/git-hooks-setup.md) | Hook framework detection and setup |
 | [`examples/`](references/examples/) | Complete examples |
+| [`ai-contribution-guidelines.md`](references/ai-contribution-guidelines.md) | "3 Cs" framework for AI contributions (Comprehension, Context, Continuity) |
+| [`directory-coverage.md`](references/directory-coverage.md) | Full coverage rationale for scoped AGENTS.md files |
 
 ## Templates
 
@@ -74,3 +76,8 @@ Root: `assets/root-thin.md` (default), `root-verbose.md`. Scoped: `assets/scoped
 ## Supported Projects
 
 Go, PHP (Composer/Laravel/Symfony/TYPO3/Oro), TypeScript (React/Next/Vue/Node), Python (pip/poetry/ruff/mypy), Skill repos, Hybrid (multi-stack with auto-scoping).
+
+## See Also
+
+- [`agent-harness-skill`](https://github.com/netresearch/agent-harness-skill) — broader agent-readiness harness (CI verification, enforcement). Invokes this skill when AGENTS.md is missing.
+- [`skill-repo-skill`](https://github.com/netresearch/skill-repo-skill) — skill-repo structure (plugin.json, split licensing, release workflows).

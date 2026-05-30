@@ -35,6 +35,7 @@ type Harness struct {
 	plugins      *plugins.Registry
 	settings     *schema.Settings
 	sessionStore *session.Store
+	extraHooks   schema.HooksConfig
 }
 
 // New creates a new Harness with empty registries.
@@ -77,6 +78,17 @@ func (p *Harness) SessionStore() *session.Store { return p.sessionStore }
 
 // SetSettings sets the base Claude Code settings.
 func (p *Harness) SetSettings(s *schema.Settings) { p.settings = s }
+
+// AddHookRule appends a HookRule for the given event that is not backed by a
+// Go handler — used for prompt/agent/http hooks that the Claude Code runtime
+// executes directly (e.g. fact-check hooks). Rules added here are merged into
+// the generated settings.json alongside handler-driven command hooks.
+func (p *Harness) AddHookRule(event schema.HookEvent, rule schema.HookRule) {
+	if p.extraHooks == nil {
+		p.extraHooks = make(schema.HooksConfig)
+	}
+	p.extraHooks[event] = append(p.extraHooks[event], rule)
+}
 
 // HandleHookEvent dispatches a hook event through all enlisted handlers.
 // It also records the event in the session store when a session ID is present.
@@ -227,6 +239,18 @@ func (p *Harness) GenerateConfig() *schema.HarnessConfig {
 					}},
 				})
 			}
+		}
+	}
+
+	// Extra hooks: prompt/agent/http rules not backed by Go handlers
+	// (e.g. fact-check Stop/SubagentStop hooks executed directly by the
+	// Claude Code runtime).
+	if len(p.extraHooks) > 0 {
+		if cfg.Hooks == nil {
+			cfg.Hooks = make(schema.HooksConfig)
+		}
+		for event, rules := range p.extraHooks {
+			cfg.Hooks[event] = append(cfg.Hooks[event], rules...)
 		}
 	}
 
