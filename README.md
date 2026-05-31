@@ -22,7 +22,7 @@ yaah generate --agent copilot      # GitHub Copilot CLI only
 
 That single command gives you:
 
-- 5 hooks out of the box: linting (golangci-lint, ruff, prettier, tsc), a command guard that blocks `rm -rf /` and friends, a secret scanner for leaked keys, a comment checker that catches `TODO: implement` placeholders, and a session logger
+- 5 hooks out of the box: linting (golangci-lint, ruff, prettier, tsc), a command guard that blocks `rm -rf /` and friends, a secret scanner for leaked keys, a comment checker that catches `TODO: implement` placeholders, and a session logger — plus an experimental tool-using fact-checker on `Stop`/`SubagentStop` (opt in via `YAAH_EXPERIMENTAL_FACT_CHECK=1`)
 - Middleware chains for composing handlers (e.g. secret scan + auto-remediation advice)
 - MCP servers for Context7 and Pulumi, plus a built-in yaah MCP server exposing tools like secret scanning, linting, and command checking directly to the agent
 - Multi-agent config generation with per-agent adaptations (MCP format, hook delivery, agent tools, skill frontmatter)
